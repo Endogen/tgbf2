@@ -101,40 +101,40 @@ class TGBFPlugin:
     #         callback=on_change,
     #         callback_pass_args=pass_args)
 
-    #@property
-    #def bot(self) -> TelegramBot:
-    #    return self._bot
+    @property
+    def tgb(self) -> TelegramBot:
+        return self._tgb
 
     @property
     def name(self) -> str:
         """ Return the name of the current plugin """
         return self._name
 
-    # @property
-    # def handle(self) -> str:
-    #     """ Return the command string that triggers the plugin """
-    #     handle = self.config.get("handle")
-    #     return handle.lower() if handle else self.name
+    @property
+    def handle(self) -> str:
+        """ Return the command string that triggers the plugin """
+        handle = self.config.get("handle")
+        return handle.lower() if handle else self.name
 
-    # @property
-    # def category(self) -> str:
-    #     """ Return the category of the plugin for the 'help' command """
-    #     return self.config.get("category")
+    @property
+    def category(self) -> str:
+        """ Return the category of the plugin for the 'help' command """
+        return self.config.get("category")
 
-    # @property
-    # def description(self) -> str:
-    #     """ Return the description of the plugin """
-    #     return self.config.get("description")
+    @property
+    def description(self) -> str:
+        """ Return the description of the plugin """
+        return self.config.get("description")
 
-    #@property
-    #def plugins(self) -> List:
-    #    """ Return a list of all active plugins """
-    #    return self.bot.plugins
+    @property
+    def plugins(self) -> List:
+        """ Return a list of all active plugins """
+        return self.tgb.plugins
 
-    # @property
-    # def jobs(self) -> Tuple:
-    #     """ Return a tuple with all currently active jobs """
-    #     return self.bot.job_queue.jobs()
+    @property
+    def jobs(self) -> Tuple:
+        """ Return a tuple with all currently active jobs """
+        return self.tgb.app.job_queue.jobs()
 
     # @property
     # def global_config(self) -> ConfigManager:
@@ -146,10 +146,10 @@ class TGBFPlugin:
     #     """ Return the configuration for this plugin """
     #     return self._config
 
-    #@property
-    #def handlers(self) -> List[BaseHandler]:
-    #    """ Return a list of bot handlers for this plugin """
-    #    return self._handlers
+    @property
+    def handlers(self) -> List[BaseHandler]:
+        """ Return a list of bot handlers for this plugin """
+        return self._handlers
 
     # @property
     # def endpoints(self) -> Dict[str, EndpointAction]:
