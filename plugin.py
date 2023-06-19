@@ -8,7 +8,6 @@ from functools import wraps
 
 from enum import Enum
 from telegram.constants import ChatAction, ParseMode
-from telegram.helpers import escape_markdown as esc_mk
 
 import constants as c
 import emoji as emo
@@ -17,8 +16,10 @@ from pathlib import Path
 from loguru import logger
 from typing import List, Tuple
 from telegram import Chat, Update, Message
-from telegram.ext import CallbackContext, CallbackQueryHandler, ConversationHandler, BaseHandler, Application
+from telegram.ext import CallbackContext, CallbackQueryHandler, ConversationHandler, BaseHandler
 from datetime import datetime, timedelta
+
+from run import TelegramBot
 
 
 class Notify(Enum):
@@ -27,13 +28,10 @@ class Notify(Enum):
     ERROR = 3
 
 
-# TODO: For each plugin, try not to use "run_async=True" for the handler and see if that helps with multiple instances
-#  If yes,then move from that to using "threaded()" in plugin class
-# TODO: How can i cast a class to it's real type (that i could choose myself) and then execute methods?
 class TGBFPlugin:
 
-    def __init__(self, app: Application):
-        self._app = app
+    def __init__(self, tgb: TelegramBot):
+        self._tgb = tgb
 
         # Set class name as name of this plugin
         self._name = type(self).__name__.lower()
@@ -176,7 +174,7 @@ class TGBFPlugin:
             else:
                 group = 0
 
-        self._app.add_handler(handler, group)
+        self._tgb.app.add_handler(handler, group)
         self._handlers.append(handler)
 
         logger.info(f"Plugin '{self.name}': {type(handler).__name__} added")

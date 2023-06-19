@@ -1,7 +1,6 @@
 import asyncio
 import sys
 import os
-import html
 import json
 import shutil
 import importlib
@@ -59,7 +58,7 @@ class TelegramBot:
 
             #reload(module)
 
-            plugin = getattr(module, module_name.capitalize())(self.app)
+            plugin = getattr(module, module_name.capitalize())(self)
             await plugin.init()
             # active = plugin.config.get("active")
             # if active is not None and active is False:
