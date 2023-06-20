@@ -238,10 +238,10 @@ class TGBFPlugin:
 
         if name:
             # Get all jobs with given name
-            return self.bot.app.job_queue.get_jobs_by_name(name)
+            return self.tgb.app.job_queue.get_jobs_by_name(name)
         else:
             # Return all jobs
-            return self.bot.app.job_queue.jobs()
+            return self.tgb.app.job_queue.jobs()
 
     def run_repeating(self, callback, interval, first=0, context=None, name=None):
         """ Executes the provided callback function indefinitely.
@@ -253,7 +253,7 @@ class TGBFPlugin:
         name of the job (if no 'name' provided) will be the name
         of the plugin """
 
-        return self.bot.app.job_queue.run_repeating(
+        return self.tgb.app.job_queue.run_repeating(
             callback,
             interval,
             first=first,
@@ -271,7 +271,7 @@ class TGBFPlugin:
         name of the job (if no 'name' provided) will be the name
         of the plugin """
 
-        return self.bot.app.job_queue.run_once(
+        return self.tgb.app.job_queue.run_once(
             callback,
             when,
             context=context,
