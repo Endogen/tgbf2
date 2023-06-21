@@ -58,23 +58,16 @@ class TelegramBot:
 
             #reload(module)
 
-            plugin = getattr(module, module_name.capitalize())(self)
-            await plugin.init()
-            # active = plugin.config.get("active")
-            # if active is not None and active is False:
-            #     msg = f"Plugin '{name}' not enabled"
-            #     logging.info(msg)
-            #     return False, msg
-
-            try:
-                self.plugins.append(plugin)
-                msg = f"Plugin '{plugin.name}' enabled"
-                logger.info(msg)
-                return True, msg
-            except Exception as e:
-                msg = f"ERROR: Plugin '{plugin.name}' load() failed: {e}"
-                logger.error(msg)
-                return False, str(e)
+            async with getattr(module, module_name.capitalize())(self) as plugin:
+                try:
+                    self.plugins.append(plugin)
+                    msg = f"Plugin '{plugin.name}' enabled"
+                    logger.info(msg)
+                    return True, msg
+                except Exception as e:
+                    msg = f"ERROR: Plugin '{plugin.name}' load() failed: {e}"
+                    logger.error(msg)
+                    return False, str(e)
         except Exception as e:
             msg = f"ERROR: Plugin '{name}' can not be enabled: {e}"
             logger.error(msg)

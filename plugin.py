@@ -53,6 +53,16 @@ class TGBFPlugin:
         #     sql = self.get_global_resource("create_wallets.sql")
         #     self.execute_global_sql(sql)
 
+    async def __aenter__(self):
+        """ This method gets executed after __init__() but before
+        load(). Make sure to return 'self' if you override it """
+        await self.init()
+        return self
+
+    async def __aexit__(self, exc_type, exc_value, traceback):
+        """ This method gets executed after __init__() and after load() """
+        pass
+
     async def init(self):
         method = inspect.currentframe().f_code.co_name
         msg = f"Method '{method}' of plugin '{self.name}' not implemented"
