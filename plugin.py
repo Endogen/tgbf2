@@ -171,6 +171,7 @@ class TGBFPlugin:
         """ Will add bot handlers to this plugins list of handlers
          and also add them to the bot dispatcher """
 
+        # TODO: Is this workaround still needed?
         if not group:
             """
             Make sure that all CallbackQueryHandlers are in their own
@@ -184,8 +185,8 @@ class TGBFPlugin:
             else:
                 group = 0
 
-        self._tgb.app.add_handler(handler, group)
-        self._handlers.append(handler)
+        self.tgb.app.add_handler(handler, group)
+        self.handlers.append(handler)
 
         logger.info(f"Plugin '{self.name}': {type(handler).__name__} added")
 
@@ -263,7 +264,7 @@ class TGBFPlugin:
         name of the job (if no 'name' provided) will be the name
         of the plugin """
 
-        return self.bot.app.job_queue.run_repeating(
+        return self.tgb.app.job_queue.run_repeating(
             callback,
             interval,
             first=first,
@@ -281,7 +282,7 @@ class TGBFPlugin:
         name of the job (if no 'name' provided) will be the name
         of the plugin """
 
-        return self.bot.app.job_queue.run_once(
+        return self.tgb.app.job_queue.run_once(
             callback,
             when,
             context=context,
@@ -476,38 +477,38 @@ class TGBFPlugin:
             if plugin.name == name:
                 return plugin
 
-    def plugin_available(self, plugin_name):
+    def is_enabled(self, plugin_name):
         """ Return TRUE if the given plugin is enabled or FALSE otherwise """
         for plugin in self.plugins:
             if plugin.name == plugin_name.lower():
                 return True
         return False
 
-    # def is_private(self, message: Message):
-    #     """ Check if message was sent in a private chat or not """
-    #     return self.bot.updater.bot.get_chat(message.chat_id).type == Chat.PRIVATE
+    def is_private(self, message: Message):
+        """ Check if message was sent in a private chat or not """
+        return self.tgb.app.updater.bot.get_chat(message.chat_id).type == Chat.PRIVATE
 
-    # def remove_msg(self, message: Message, after_secs, private=True, public=True):
-    #     """ Remove a Telegram message after a given time """
-    #
-    #     def remove_msg_job(context: CallbackContext):
-    #         param_lst = str(context.job.context).split("_")
-    #         chat_id = param_lst[0]
-    #         msg_id = param_lst[1]
-    #
-    #         try:
-    #             context.bot.delete_message(chat_id=chat_id, message_id=msg_id)
-    #         except Exception as e:
-    #             logger.error(f"Not possible to remove message: {e}")
-    #
-    #     def remove():
-    #         self.run_once(
-    #             remove_msg_job,
-    #             datetime.utcnow() + timedelta(seconds=after_secs),
-    #             context=f"{message.chat_id}_{message.message_id}")
-    #
-    #     if (self.is_private(message) and private) or (not self.is_private(message) and public):
-    #         remove()
+    def remove_msg_after(self, message: Message, after_secs, private=True, public=True):
+        """ Remove a Telegram message after a given time """
+
+        def remove_msg_job(context: CallbackContext):
+            param_lst = str(context.job.context).split("_")
+            chat_id = param_lst[0]
+            msg_id = param_lst[1]
+
+            try:
+                context.bot.delete_message(chat_id=chat_id, message_id=msg_id)  # FIXME: ???
+            except Exception as e:
+                logger.error(f"Not possible to remove message: {e}")
+
+        def remove():
+            self.run_once(
+                remove_msg_job,
+                datetime.utcnow() + timedelta(seconds=after_secs),
+                context=f"{message.chat_id}_{message.message_id}")
+
+        if (self.is_private(message) and private) or (not self.is_private(message) and public):
+            remove()
 
     # def notify(self, some_input, style: Notify = Notify.ERROR):
     #     """ All admins in global config will get a message with the given text.
