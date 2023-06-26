@@ -150,6 +150,7 @@ def from_unix_time(seconds, millis=False):
     return datetime.utcfromtimestamp(seconds / 1000 if millis else seconds)
 
 
+# TODO: Get this the standard way --> Some socket class
 def get_external_ip():
     import urllib.request, re
     site = urllib.request.urlopen("http://checkip.dyndns.org/").read()

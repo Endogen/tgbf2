@@ -11,6 +11,7 @@ from telegram.constants import ChatAction, ParseMode
 
 import constants as c
 import emoji as emo
+import utils as utl
 
 from pathlib import Path
 from loguru import logger
@@ -244,17 +245,17 @@ class TGBFPlugin:
             self.notify(e)
             return None
 
-    def get_jobs(self, name=None) -> Tuple['Job', ...]:
+    def get_jobs(self, name=None) -> Tuple['Job[CCT]', ...]:
         """ Return jobs with given name or all jobs if not name given """
 
         if name:
             # Get all jobs with given name
-            return self.bot.app.job_queue.get_jobs_by_name(name)
+            return self.tgb.app.job_queue.get_jobs_by_name(name)
         else:
             # Return all jobs
-            return self.bot.app.job_queue.jobs()
+            return self.tgb.app.job_queue.jobs()
 
-    def run_repeating(self, callback, interval, first=0, context=None, name=None):
+    def run_repeating(self, callback, interval, first=0, last=None, data=None, name=None):
         """ Executes the provided callback function indefinitely.
         It will be executed every 'interval' (seconds) time. The
         created job will be returned by this method. If you want
@@ -262,16 +263,17 @@ class TGBFPlugin:
 
         The job will be added to the job queue and the default
         name of the job (if no 'name' provided) will be the name
-        of the plugin """
+        of the plugin plus some random data"""
 
         return self.tgb.app.job_queue.run_repeating(
             callback,
             interval,
             first=first,
-            context=context,
-            name=name if name else self.name)
+            last=last,
+            data=data,
+            name=name if name else (self.name + "_" + utl.id()))
 
-    def run_once(self, callback, when, context=None, name=None):
+    def run_once(self, callback, when, data=None, name=None):
         """ Executes the provided callback function only one time.
         It will be executed at the provided 'when' time. The
         created job will be returned by this method. If you want
@@ -285,8 +287,8 @@ class TGBFPlugin:
         return self.tgb.app.job_queue.run_once(
             callback,
             when,
-            context=context,
-            name=name if name else self.name)
+            data=data,
+            name=name if name else (self.name + "_" + utl.id()))
 
     # def execute_global_sql(self, sql, *args, db_name=""):
     #     """ Execute raw SQL statement on the global
@@ -488,54 +490,50 @@ class TGBFPlugin:
         """ Check if message was sent in a private chat or not """
         return self.tgb.app.updater.bot.get_chat(message.chat_id).type == Chat.PRIVATE
 
-    def remove_msg_after(self, message: Message, after_secs, private=True, public=True):
+    def remove_msg_after(self, message: Message, after_secs):
         """ Remove a Telegram message after a given time """
 
-        def remove_msg_job(context: CallbackContext):
-            param_lst = str(context.job.context).split("_")
+        async def remove_msg_job(context: CallbackContext):
+            param_lst = str(context.job.data).split("_")
             chat_id = param_lst[0]
-            msg_id = param_lst[1]
+            msg_id = int(param_lst[1])
 
             try:
-                context.bot.delete_message(chat_id=chat_id, message_id=msg_id)  # FIXME: ???
+                await context.bot.delete_message(chat_id=chat_id, message_id=msg_id)
             except Exception as e:
                 logger.error(f"Not possible to remove message: {e}")
 
-        def remove():
-            self.run_once(
-                remove_msg_job,
-                datetime.utcnow() + timedelta(seconds=after_secs),
-                context=f"{message.chat_id}_{message.message_id}")
+        self.run_once(
+            remove_msg_job,
+            datetime.utcnow() + timedelta(seconds=after_secs),
+            data=f"{message.chat_id}_{message.message_id}")
 
-        if (self.is_private(message) and private) or (not self.is_private(message) and public):
-            remove()
+    def notify(self, some_input, style: Notify = Notify.ERROR):
+        """ All admins in global config will get a message with the given text.
+         Primarily used for exceptions but can be used with other inputs too. """
 
-    # def notify(self, some_input, style: Notify = Notify.ERROR):
-    #     """ All admins in global config will get a message with the given text.
-    #      Primarily used for exceptions but can be used with other inputs too. """
-    #
-    #     if isinstance(some_input, Exception):
-    #         some_input = repr(some_input)
-    #
-    #     if self.global_config.get("admin", "notify_on_error"):
-    #         for admin in self.global_config.get("admin", "ids"):
-    #             if style == Notify.INFO:
-    #                 emoji = f"{emo.INFO}"
-    #             elif style == Notify.WARNING:
-    #                 emoji = f"{emo.WARNING}"
-    #             elif style == Notify.ERROR:
-    #                 emoji = f"{emo.ALERT}"
-    #             else:
-    #                 emoji = f"{emo.ALERT}"
-    #
-    #             msg = f"{emoji} {some_input}"
-    #
-    #             try:
-    #                 self.bot.updater.bot.send_message(admin, msg)
-    #             except Exception as e:
-    #                 error = f"Not possible to notify admin id '{admin}'"
-    #                 logger.error(f"{error}: {e}")
-    #     return some_input
+        if isinstance(some_input, Exception):
+            some_input = repr(some_input)
+
+        if self.global_config.get("admin", "notify_on_error"):
+            for admin in self.global_config.get("admin", "ids"):
+                if style == Notify.INFO:
+                    emoji = f"{emo.INFO}"
+                elif style == Notify.WARNING:
+                    emoji = f"{emo.WARNING}"
+                elif style == Notify.ERROR:
+                    emoji = f"{emo.ALERT}"
+                else:
+                    emoji = f"{emo.ALERT}"
+
+                msg = f"{emoji} {some_input}"
+
+                try:
+                    self.tgb.app.updater.bot.send_message(admin, msg)
+                except Exception as e:
+                    error = f"Not possible to notify admin id '{admin}'"
+                    logger.error(f"{error}: {e}")
+        return some_input
 
     # @classmethod
     # def private(cls, func):
