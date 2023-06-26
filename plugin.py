@@ -7,7 +7,7 @@ import asyncio
 from functools import wraps
 
 from enum import Enum
-from telegram.constants import ChatAction, ParseMode
+from telegram.constants import ChatAction
 
 import constants as c
 import emoji as emo
@@ -519,88 +519,88 @@ class TGBFPlugin:
 
         return True
 
-    # @classmethod
-    # def private(cls, func):
-    #     """ Decorator for methods that need to be run in a private chat with the bot """
-    #
-    #     def _private(self, update: Update, context: CallbackContext, **kwargs):
-    #         if self.config.get("private") == False:
-    #             return func(self, update, context, **kwargs)
-    #         if context.bot.get_chat(update.effective_chat.id).type == Chat.PRIVATE:
-    #             return func(self, update, context, **kwargs)
-    #
-    #         if update.message:
-    #             name = context.bot.username if context.bot.username else context.bot.name
-    #             msg = f"{emo.ERROR} DM the bot @{name} to use this command"
-    #             update.message.reply_text(msg)
-    #
-    #     return _private
+    @classmethod
+    def private(cls, func):
+        """ Decorator for methods that need to be run in a private chat with the bot """
 
-    # @classmethod
-    # def public(cls, func):
-    #     """ Decorator for methods that need to be run in a public group """
-    #
-    #     def _public(self, update: Update, context: CallbackContext, **kwargs):
-    #         if self.config.get("public") == False:
-    #             return func(self, update, context, **kwargs)
-    #         if context.bot.get_chat(update.effective_chat.id).type != Chat.PRIVATE:
-    #             return func(self, update, context, **kwargs)
-    #
-    #         if update.message:
-    #             msg = f"{emo.ERROR} Can only be used in a public chat"
-    #             update.message.reply_text(msg)
-    #
-    #     return _public
+        def _private(self, update: Update, context: CallbackContext, **kwargs):
+            if self.config.get("private") == False:
+                return func(self, update, context, **kwargs)
+            if context.bot.get_chat(update.effective_chat.id).type == Chat.PRIVATE:
+                return func(self, update, context, **kwargs)
 
-    # @classmethod
-    # def owner(cls, func):
-    #     """
-    #     Decorator that executes the method only if the user is an bot admin.
-    #
-    #     The user ID that triggered the command has to be in the ["admin"]["ids"]
-    #     list of the global config file 'config.json' or in the ["admins"] list
-    #     of the currently used plugin config file.
-    #     """
-    #
-    #     def _owner(self, update: Update, context: CallbackContext, **kwargs):
-    #         if self.config.get("owner") == False:
-    #             return func(self, update, context, **kwargs)
-    #
-    #         user_id = update.effective_user.id
-    #
-    #         admins_global = self.global_config.get("admin", "ids")
-    #         if admins_global and isinstance(admins_global, list):
-    #             if user_id in admins_global:
-    #                 return func(self, update, context, **kwargs)
-    #
-    #         admins_plugin = self.config.get("admins")
-    #         if admins_plugin and isinstance(admins_plugin, list):
-    #             if user_id in admins_plugin:
-    #                 return func(self, update, context, **kwargs)
-    #
-    #     return _owner
+            if update.message:
+                name = context.bot.username if context.bot.username else context.bot.name
+                msg = f"{emo.ERROR} DM the bot @{name} to use this command"
+                update.message.reply_text(msg)
 
-    # @classmethod
-    # def dependency(cls, func):
-    #     """ Decorator that executes a method only if the mentioned
-    #     plugins in the config file of the current plugin are enabled """
-    #
-    #     def _dependency(self, update: Update, context: CallbackContext, **kwargs):
-    #         dependencies = self.config.get("dependency")
-    #
-    #         if dependencies and isinstance(dependencies, list):
-    #             plugin_names = [p.name for p in self.plugins]
-    #
-    #             for dependency in dependencies:
-    #                 if dependency.lower() not in plugin_names:
-    #                     msg = f"{emo.ERROR} Plugin '{self.name}' is missing dependency '{dependency}'"
-    #                     update.message.reply_text(msg)
-    #                     return
-    #         else:
-    #             logger.error(f"Dependencies for plugin '{self.name}' not defined as list")
-    #
-    #         return func(self, update, context, **kwargs)
-    #     return _dependency
+        return _private
+
+    @classmethod
+    def public(cls, func):
+        """ Decorator for methods that need to be run in a public group """
+
+        def _public(self, update: Update, context: CallbackContext, **kwargs):
+            if self.config.get("public") == False:
+                return func(self, update, context, **kwargs)
+            if context.bot.get_chat(update.effective_chat.id).type != Chat.PRIVATE:
+                return func(self, update, context, **kwargs)
+
+            if update.message:
+                msg = f"{emo.ERROR} Can only be used in a public chat"
+                update.message.reply_text(msg)
+
+        return _public
+
+    @classmethod
+    def owner(cls, func):
+        """
+        Decorator that executes the method only if the user is an bot admin.
+
+        The user ID that triggered the command has to be in the ["admin"]["ids"]
+        list of the global config file 'config.json' or in the ["admins"] list
+        of the currently used plugin config file.
+        """
+
+        def _owner(self, update: Update, context: CallbackContext, **kwargs):
+            if self.config.get("owner") == False:
+                return func(self, update, context, **kwargs)
+
+            user_id = update.effective_user.id
+
+            admins_global = self.global_config.get("admin", "ids")
+            if admins_global and isinstance(admins_global, list):
+                if user_id in admins_global:
+                    return func(self, update, context, **kwargs)
+
+            admins_plugin = self.config.get("admins")
+            if admins_plugin and isinstance(admins_plugin, list):
+                if user_id in admins_plugin:
+                    return func(self, update, context, **kwargs)
+
+        return _owner
+
+    @classmethod
+    def dependency(cls, func):
+        """ Decorator that executes a method only if the mentioned
+        plugins in the config file of the current plugin are enabled """
+
+        def _dependency(self, update: Update, context: CallbackContext, **kwargs):
+            dependencies = self.config.get("dependency")
+
+            if dependencies and isinstance(dependencies, list):
+                plugin_names = [p.name for p in self.plugins]
+
+                for dependency in dependencies:
+                    if dependency.lower() not in plugin_names:
+                        msg = f"{emo.ERROR} Plugin '{self.name}' is missing dependency '{dependency}'"
+                        update.message.reply_text(msg)
+                        return
+            else:
+                logger.error(f"Dependencies for plugin '{self.name}' not defined as list")
+
+            return func(self, update, context, **kwargs)
+        return _dependency
 
     @classmethod
     def send_typing(cls, func):
@@ -626,53 +626,54 @@ class TGBFPlugin:
 
         return _send_typing
 
-    # @classmethod
-    # def blacklist(cls, func):
-    #     """ Decorator to check whether a command can be executed in the given
-    #      chat or not. If the current chat ID is part of the 'blacklist' list
-    #      in the plugins config file then the command will not be executed. """
-    #
-    #     def _blacklist(self, update: Update, context: CallbackContext, **kwargs):
-    #         blacklist_chats = self.config.get("blacklist")
-    #
-    #         if blacklist_chats and (update.effective_chat.id in blacklist_chats):
-    #             name = context.bot.username if context.bot.username else context.bot.name
-    #             msg = self.config.get("blacklist_msg").replace("{{name}}", esc_mk(name))
-    #
-    #             update.message.reply_text(
-    #                 msg,
-    #                 parse_mode=ParseMode.MARKDOWN,
-    #                 disable_web_page_preview=True)
-    #         else:
-    #             return func(self, update, context, **kwargs)
-    #
-    #     return _blacklist
+    @classmethod
+    def blacklist(cls, func):
+        """ Decorator to check whether a command can be executed in the given
+         chat or not. If the current chat ID is part of the 'blacklist' list
+         in the plugins config file then the command will not be executed. """
 
-    # @classmethod
-    # def whitelist(cls, func):
-    #     """ Decorator to check whether a command can be executed in the given
-    #      chat or not. If the current chat ID is part of the 'whitelist' list
-    #      in the plugins config file then the command will be executed. """
-    #
-    #     def _whitelist(self, update: Update, context: CallbackContext, **kwargs):
-    #         whitelist_chats = self.config.get("whitelist")
-    #
-    #         if whitelist_chats and (update.effective_chat.id in whitelist_chats):
-    #             return func(self, update, context, **kwargs)
-    #         else:
-    #             name = context.bot.username if context.bot.username else context.bot.name
-    #             msg = self.config.get("whitelist_msg").replace("{{name}}", esc_mk(name))
-    #
-    #             update.message.reply_text(
-    #                 msg,
-    #                 parse_mode=ParseMode.MARKDOWN,
-    #                 disable_web_page_preview=True)
-    #
-    #     return _whitelist
+        @wraps(func)
+        def _blacklist(self, update: Update, context: CallbackContext, **kwargs):
+            blacklist_chats = self.config.get("blacklist")
 
-    # @staticmethod
-    # def threaded(fn):
-    #     """ Decorator for methods that have to run in their own thread """
-    #     def _threaded(*args, **kwargs):
-    #         return threading.Thread(target=fn, args=args, kwargs=kwargs).start()
-    #     return _threaded
+            try:
+                if blacklist_chats and (update.effective_chat.id in blacklist_chats):
+                    name = context.bot.username if context.bot.username else context.bot.name
+                    msg = self.config.get("blacklist_msg").replace("{{name}}", name)  # TODO: Rework
+                    await update.message.reply_text(msg, disable_web_page_preview=True)
+            except:
+                pass
+
+            if asyncio.iscoroutinefunction(func):
+                return await func(self, update, context, **kwargs)
+            else:
+                return func(self, update, context, **kwargs)
+
+        return _blacklist
+
+    @classmethod
+    def whitelist(cls, func):
+        """ Decorator to check whether a command can be executed in the given
+         chat or not. If the current chat ID is part of the 'whitelist' list
+         in the plugins config file then the command will be executed. """
+
+        @wraps(func)
+        def _whitelist(self, update: Update, context: CallbackContext, **kwargs):
+            whitelist_chats = self.config.get("whitelist")
+
+            try:
+                if whitelist_chats and (update.effective_chat.id in whitelist_chats):
+                    return func(self, update, context, **kwargs)
+                else:
+                    name = context.bot.username if context.bot.username else context.bot.name
+                    msg = self.config.get("whitelist_msg").replace("{{name}}", name)  # TODO: Rework
+                    await update.message.reply_text(msg, disable_web_page_preview=True)
+            except:
+                pass
+
+            if asyncio.iscoroutinefunction(func):
+                return await func(self, update, context, **kwargs)
+            else:
+                return func(self, update, context, **kwargs)
+
+        return _whitelist
