@@ -23,12 +23,6 @@ from datetime import datetime, timedelta
 from run import TelegramBot
 
 
-class Notify(Enum):
-    INFO = 1
-    WARNING = 2
-    ERROR = 3
-
-
 class TGBFPlugin:
 
     def __init__(self, tgb: TelegramBot):
@@ -490,7 +484,7 @@ class TGBFPlugin:
         """ Check if message was sent in a private chat or not """
         return self.tgb.app.updater.bot.get_chat(message.chat_id).type == Chat.PRIVATE
 
-    def remove_msg_after(self, message: Message, after_secs):
+    async def remove_msg_after(self, message: Message, after_secs):
         """ Remove a Telegram message after a given time """
 
         async def remove_msg_job(context: CallbackContext):
@@ -508,32 +502,22 @@ class TGBFPlugin:
             datetime.utcnow() + timedelta(seconds=after_secs),
             data=f"{message.chat_id}_{message.message_id}")
 
-    def notify(self, some_input, style: Notify = Notify.ERROR):
+    # TODO: Set correct admin ID
+    async def notify(self, some_input):
         """ All admins in global config will get a message with the given text.
          Primarily used for exceptions but can be used with other inputs too. """
 
         if isinstance(some_input, Exception):
             some_input = repr(some_input)
 
-        if self.global_config.get("admin", "notify_on_error"):
-            for admin in self.global_config.get("admin", "ids"):
-                if style == Notify.INFO:
-                    emoji = f"{emo.INFO}"
-                elif style == Notify.WARNING:
-                    emoji = f"{emo.WARNING}"
-                elif style == Notify.ERROR:
-                    emoji = f"{emo.ALERT}"
-                else:
-                    emoji = f"{emo.ALERT}"
+        try:
+            await self.tgb.app.updater.bot.send_message(134166731, f"{emo.ALERT} {some_input}")
+        except Exception as e:
+            error = f"Not possible to notify admin id '{134166731}'"
+            logger.error(f"{error}: {e}")
+            return False
 
-                msg = f"{emoji} {some_input}"
-
-                try:
-                    self.tgb.app.updater.bot.send_message(admin, msg)
-                except Exception as e:
-                    error = f"Not possible to notify admin id '{admin}'"
-                    logger.error(f"{error}: {e}")
-        return some_input
+        return True
 
     # @classmethod
     # def private(cls, func):
