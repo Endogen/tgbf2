@@ -60,8 +60,7 @@ class TGBFPlugin:
 
     async def init(self):
         method = inspect.currentframe().f_code.co_name
-        msg = f"Method '{method}' of plugin '{self.name}' not implemented"
-        logger.warning(msg)
+        raise NotImplementedError(f"Method '{method}' not implemented")
 
     def callback_cfg_change(self, value, *keys):
         """ Overwrite this method if you need some logic to be executed
@@ -589,7 +588,7 @@ class TGBFPlugin:
         plugins in the config file of the current plugin are enabled """
 
         @wraps(func)
-        def _dependency(self, update: Update, context: CallbackContext, **kwargs):
+        async def _dependency(self, update: Update, context: CallbackContext, **kwargs):
             dependencies = self.config.get("dependency")
 
             if dependencies and isinstance(dependencies, list):
@@ -641,7 +640,7 @@ class TGBFPlugin:
          in the plugins config file then the command will not be executed. """
 
         @wraps(func)
-        def _blacklist(self, update: Update, context: CallbackContext, **kwargs):
+        async def _blacklist(self, update: Update, context: CallbackContext, **kwargs):
             blacklist_chats = self.config.get("blacklist")
 
             try:
@@ -666,7 +665,7 @@ class TGBFPlugin:
          in the plugins config file then the command will be executed. """
 
         @wraps(func)
-        def _whitelist(self, update: Update, context: CallbackContext, **kwargs):
+        async def _whitelist(self, update: Update, context: CallbackContext, **kwargs):
             whitelist_chats = self.config.get("whitelist")
 
             try:

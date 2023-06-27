@@ -65,7 +65,7 @@ class TelegramBot:
                     logger.info(msg)
                     return True, msg
                 except Exception as e:
-                    msg = f"ERROR: Plugin '{plugin.name}' load() failed: {e}"
+                    msg = f"ERROR: Plugin '{plugin.name}' initialization failed: {e}"
                     logger.error(msg)
                     return False, str(e)
         except Exception as e:

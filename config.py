@@ -63,6 +63,7 @@ class ConfigManager(Thread):
                 if status == Change.modified and location == self._cfg_file:
                     self.on_modified()
 
+    # TODO: Rename to on_change()
     def on_modified(self):
         """ Will be triggered if the config file has been changed manually.
          Will also execute the callback method if there is one """
