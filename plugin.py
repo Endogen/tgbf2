@@ -523,6 +523,7 @@ class TGBFPlugin:
     def private(cls, func):
         """ Decorator for methods that need to be run in a private chat with the bot """
 
+        @wraps(func)
         def _private(self, update: Update, context: CallbackContext, **kwargs):
             if self.config.get("private") == False:
                 return func(self, update, context, **kwargs)
@@ -540,10 +541,11 @@ class TGBFPlugin:
     def public(cls, func):
         """ Decorator for methods that need to be run in a public group """
 
+        @wraps(func)
         def _public(self, update: Update, context: CallbackContext, **kwargs):
             if self.config.get("public") == False:
                 return func(self, update, context, **kwargs)
-            if context.bot.get_chat(update.effective_chat.id).type != Chat.PRIVATE:
+            if context.bot.get_chat(update.effective_chat.id).type != Chat.PRIVATE:  # TODO: Rework
                 return func(self, update, context, **kwargs)
 
             if update.message:
@@ -562,6 +564,7 @@ class TGBFPlugin:
         of the currently used plugin config file.
         """
 
+        @wraps(func)
         def _owner(self, update: Update, context: CallbackContext, **kwargs):
             if self.config.get("owner") == False:
                 return func(self, update, context, **kwargs)
@@ -585,6 +588,7 @@ class TGBFPlugin:
         """ Decorator that executes a method only if the mentioned
         plugins in the config file of the current plugin are enabled """
 
+        @wraps(func)
         def _dependency(self, update: Update, context: CallbackContext, **kwargs):
             dependencies = self.config.get("dependency")
 
@@ -594,12 +598,16 @@ class TGBFPlugin:
                 for dependency in dependencies:
                     if dependency.lower() not in plugin_names:
                         msg = f"{emo.ERROR} Plugin '{self.name}' is missing dependency '{dependency}'"
-                        update.message.reply_text(msg)
+                        await update.message.reply_text(msg)
                         return
             else:
                 logger.error(f"Dependencies for plugin '{self.name}' not defined as list")
 
-            return func(self, update, context, **kwargs)
+            if asyncio.iscoroutinefunction(func):
+                return await func(self, update, context, **kwargs)
+            else:
+                return func(self, update, context, **kwargs)
+
         return _dependency
 
     @classmethod
