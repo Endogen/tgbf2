@@ -27,7 +27,7 @@ class TelegramBot:
 
     def __init__(self):
         self.app = None
-        self.plugins = list()
+        self.plugins = dict()
         self.cfg = ConfigManager(c.DIR_CFG / c.FILE_CFG)
 
     async def run(self):
@@ -67,23 +67,25 @@ class TelegramBot:
                     if folder.startswith("_"):
                         continue
                     logger.info(f"Plugin '{folder}' loading...")
-                    await self.load_plugin(f"{folder}.py")
+                    await self.enable_plugin(f"{folder}.py")
                 break
         except Exception as e:
             logger.error(e)
 
-    async def load_plugin(self, name):
+    async def enable_plugin(self, name):
         """ Load a single plugin """
+
+
         try:
             module_name, _ = os.path.splitext(name)
             module_path = f"{c.DIR_PLG}.{module_name}.{module_name}"
             module = importlib.import_module(module_path)
 
-            # reload(module)  # TODO: Activate again
+            reload(module)
 
             async with getattr(module, module_name.capitalize())(self) as plugin:
                 try:
-                    self.plugins.append(plugin)
+                    self.plugins[name] = plugin
                     msg = f"Plugin '{plugin.name}' enabled"
                     logger.info(msg)
                     return True, msg
@@ -95,6 +97,38 @@ class TelegramBot:
             msg = f"ERROR: Plugin '{name}' can not be enabled: {e}"
             logger.error(msg)
             return False, str(e)
+
+    async def disable_plugin(self, name):
+        """ Remove a plugin from the plugin list and also
+         remove all its handlers from the dispatcher """
+
+        if name in self.plugins:
+            plugin = self.plugins[name]
+
+            # Remove endpoints  # TODO: Currently not possible
+            if plugin.endpoints:
+                msg = f"Not possible to disable a plugin that has an endpoint"
+                logger.info(msg)
+                return False, msg
+
+            # Remove plugin handlers
+            for handler in plugin.handlers:
+                self.app.remove_handler(handler)
+
+            # Remove plugin from list of all plugins
+            del self.plugins[name]
+
+            try:
+                # Run plugins cleanup method
+                plugin.cleanup()
+            except Exception as e:
+                msg = f"Plugin '{plugin.name}' cleanup failed: {e}"
+                logger.error(msg)
+                return False, str(e)
+
+            msg = f"Plugin '{plugin.name}' disabled"
+            logger.info(msg)
+            return True, msg
 
     async def _update_handler(self, update: Update, context: CallbackContext) -> None:
         """

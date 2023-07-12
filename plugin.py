@@ -14,7 +14,7 @@ import utils as utl
 
 from pathlib import Path
 from loguru import logger
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from telegram import Chat, Update, Message
 from telegram.ext import CallbackContext, CallbackQueryHandler, ConversationHandler, BaseHandler
 from datetime import datetime, timedelta
@@ -61,6 +61,11 @@ class TGBFPlugin:
         method = inspect.currentframe().f_code.co_name
         raise NotImplementedError(f"Method '{method}' not implemented")
 
+    async def cleanup(self):
+        """ Overwrite this method if you want to clean something up
+         before the plugin will be disabled """
+        pass
+
     @property
     def tgb(self) -> TelegramBot:
         return self._tgb
@@ -87,7 +92,7 @@ class TGBFPlugin:
         return self.cfg.get("description")
 
     @property
-    def plugins(self) -> List:
+    def plugins(self) -> Dict:
         """ Return a list of all active plugins """
         return self.tgb.plugins
 
@@ -311,12 +316,12 @@ class TGBFPlugin:
     #     res = {"success": None, "data": None}
     #
     #     # Check if database usage is enabled
-    #     if not self.global_config.get("database", "use_db"):
+    #     if not self.global_cfg.get("database", "use_db"):
     #         res["data"] = "Database disabled"
     #         res["success"] = False
     #         return res
     #
-    #     timeout = self.global_config.get("database", "timeout")
+    #     timeout = self.global_cfg.get("database", "timeout")
     #     db_timeout = timeout if timeout else 5
     #
     #     try:
@@ -424,17 +429,13 @@ class TGBFPlugin:
         plugin = plugin if plugin else self.name
         return os.path.join(c.DIR_PLG, plugin)
 
-    def get_plugin(self, name):
-        for plugin in self.plugins:
-            if plugin.name == name:
-                return plugin
+    def get_plugin(self, plugin_name):
+        if plugin_name in self.plugins:
+            return self.plugins[plugin_name]
 
     def is_enabled(self, plugin_name):
         """ Return TRUE if the given plugin is enabled or FALSE otherwise """
-        for plugin in self.plugins:
-            if plugin.name == plugin_name.lower():
-                return True
-        return False
+        return plugin_name in self.plugins
 
     def is_private(self, message: Message):
         """ Check if message was sent in a private chat or not """
@@ -516,7 +517,7 @@ class TGBFPlugin:
         Decorator that executes the method only if the user is an bot admin.
 
         The user ID that triggered the command has to be in the ["admin"]["ids"]
-        list of the global config file 'config.json' or in the ["admins"] list
+        list of the global config file 'global.cfg' or in the ["admins"] list
         of the currently used plugin config file.
         """
 
@@ -527,12 +528,12 @@ class TGBFPlugin:
 
             user_id = update.effective_user.id
 
-            admins_global = self.global_config.get("admin", "ids")
+            admins_global = self.global_cfg.get("admin", "ids")
             if admins_global and isinstance(admins_global, list):
                 if user_id in admins_global:
                     return func(self, update, context, **kwargs)
 
-            admins_plugin = self.config.get("admins")
+            admins_plugin = self.cfg.get("admins")
             if admins_plugin and isinstance(admins_plugin, list):
                 if user_id in admins_plugin:
                     return func(self, update, context, **kwargs)
@@ -546,13 +547,11 @@ class TGBFPlugin:
 
         @wraps(func)
         async def _dependency(self, update: Update, context: CallbackContext, **kwargs):
-            dependencies = self.config.get("dependency")
+            dependencies = self.cfg.get("dependency")
 
             if dependencies and isinstance(dependencies, list):
-                plugin_names = [p.name for p in self.plugins]
-
                 for dependency in dependencies:
-                    if dependency.lower() not in plugin_names:
+                    if dependency.lower() not in self.plugins:
                         msg = f"{emo.ERROR} Plugin '{self.name}' is missing dependency '{dependency}'"
                         await update.message.reply_text(msg)
                         return
@@ -598,12 +597,12 @@ class TGBFPlugin:
 
         @wraps(func)
         async def _blacklist(self, update: Update, context: CallbackContext, **kwargs):
-            blacklist_chats = self.config.get("blacklist")
+            blacklist_chats = self.cfg.get("blacklist")
 
             try:
                 if blacklist_chats and (update.effective_chat.id in blacklist_chats):
                     name = context.bot.username if context.bot.username else context.bot.name
-                    msg = self.config.get("blacklist_msg").replace("{{name}}", name)  # TODO: Rework
+                    msg = self.cfg.get("blacklist_msg").replace("{{name}}", name)  # TODO: Rework
                     await update.message.reply_text(msg, disable_web_page_preview=True)
             except:
                 pass
@@ -623,14 +622,14 @@ class TGBFPlugin:
 
         @wraps(func)
         async def _whitelist(self, update: Update, context: CallbackContext, **kwargs):
-            whitelist_chats = self.config.get("whitelist")
+            whitelist_chats = self.cfg.get("whitelist")
 
             try:
                 if whitelist_chats and (update.effective_chat.id in whitelist_chats):
                     return func(self, update, context, **kwargs)
                 else:
                     name = context.bot.username if context.bot.username else context.bot.name
-                    msg = self.config.get("whitelist_msg").replace("{{name}}", name)  # TODO: Rework
+                    msg = self.cfg.get("whitelist_msg").replace("{{name}}", name)  # TODO: Rework
                     await update.message.reply_text(msg, disable_web_page_preview=True)
             except:
                 pass
