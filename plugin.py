@@ -7,6 +7,7 @@ import asyncio
 from functools import wraps
 
 from telegram.constants import ChatAction
+from telegram.ext._utils.types import CCT
 
 import constants as c
 import emoji as emo
@@ -16,7 +17,7 @@ from pathlib import Path
 from loguru import logger
 from typing import List, Tuple, Dict
 from telegram import Chat, Update, Message
-from telegram.ext import CallbackContext, CallbackQueryHandler, ConversationHandler, BaseHandler
+from telegram.ext import CallbackContext, CallbackQueryHandler, ConversationHandler, BaseHandler, Job
 from datetime import datetime, timedelta
 
 from config import ConfigManager
@@ -244,190 +245,183 @@ class TGBFPlugin:
             data=data,
             name=name if name else (self.name + "_" + utl.id()))
 
-    # def execute_global_sql(self, sql, *args, db_name=""):
-    #     """ Execute raw SQL statement on the global
-    #     database and return the result
-    #
-    #     param: sql = the SQL query
-    #     param: *args = arguments for the SQL query
-    #     param: db_name = name of the database file
-    #
-    #     Following data will be returned
-    #     If error happens:
-    #     {"success": False, "data": None}
-    #
-    #     If no data available:
-    #     {"success": True, "data": None}
-    #
-    #     If database disabled:
-    #     {"success": False, "data": "Database disabled"} """
-    #
-    #     if db_name:
-    #         if not db_name.lower().endswith(".db"):
-    #             db_name += ".db"
-    #     else:
-    #         db_name = c.FILE_DAT
-    #
-    #     db_path = os.path.join(os.getcwd(), c.DIR_DAT, db_name)
-    #     return self._get_database_content(db_path, sql, *args)
+    def exec_sql_global(self, sql, *args, db_name=""):
+        """ Execute raw SQL statement on the global
+        database and return the result
 
-    # def execute_sql(self, sql, *args, plugin="", db_name=""):
-    #     """ Execute raw SQL statement on database for given
-    #     plugin and return the result.
-    #
-    #     param: sql = the SQL query
-    #     param: *args = arguments for the SQL query
-    #     param: plugin = name of plugin that DB belongs too
-    #     param: db_name = name of DB in case it's not the
-    #     default (the name of the plugin)
-    #
-    #     Following data will be returned
-    #     If error happens:
-    #     {"success": False, "data": None}
-    #
-    #     If no data available:
-    #     {"success": True, "data": None}
-    #
-    #     If database disabled:
-    #     {"success": False, "data": "Database disabled"} """
-    #
-    #     if db_name:
-    #         if not db_name.lower().endswith(".db"):
-    #             db_name += ".db"
-    #     else:
-    #         if plugin:
-    #             db_name = plugin + ".db"
-    #         else:
-    #             db_name = self.name + ".db"
-    #
-    #     if plugin:
-    #         plugin = plugin.lower()
-    #         data_path = self.get_dat_path(plugin=plugin)
-    #         db_path = os.path.join(data_path, db_name)
-    #     else:
-    #         db_path = os.path.join(self.get_dat_path(), db_name)
-    #
-    #     return self._get_database_content(db_path, sql, *args)
+        param: sql = the SQL query
+        param: *args = arguments for the SQL query
+        param: db_name = name of the database file
 
-    # TODO: Weird name since it's not always only getting but also setting values
-    # def _get_database_content(self, db_path, sql, *args):
-    #     """ Open database connection and execute SQL statement """
-    #
-    #     res = {"success": None, "data": None}
-    #
-    #     # Check if database usage is enabled
-    #     if not self.global_cfg.get("database", "use_db"):
-    #         res["data"] = "Database disabled"
-    #         res["success"] = False
-    #         return res
-    #
-    #     timeout = self.global_cfg.get("database", "timeout")
-    #     db_timeout = timeout if timeout else 5
-    #
-    #     try:
-    #         # Create directory if it doesn't exist
-    #         directory = os.path.dirname(db_path)
-    #         os.makedirs(directory, exist_ok=True)
-    #     except Exception as e:
-    #         res["data"] = str(e)
-    #         res["success"] = False
-    #         logger.error(e)
-    #         self.notify(e)
-    #
-    #     with sqlite3.connect(db_path, timeout=db_timeout) as con:
-    #         try:
-    #             cur = con.cursor()
-    #             cur.execute(sql, args)
-    #             con.commit()
-    #
-    #             res["data"] = cur.fetchall()
-    #             res["success"] = True
-    #
-    #         except Exception as e:
-    #             res["data"] = str(e)
-    #             res["success"] = False
-    #             logger.error(e)
-    #             self.notify(e)
-    #
-    #         return res
+        Following data will be returned
+        If error happens:
+        {"success": False, "data": None}
 
-    # def global_table_exists(self, table_name, db_name=""):
-    #     """ Return TRUE if given table exists in global database, otherwise FALSE """
-    #
-    #     if db_name:
-    #         if not db_name.lower().endswith(".db"):
-    #             db_name += ".db"
-    #     else:
-    #         db_name = c.FILE_DAT
-    #
-    #     db_path = os.path.join(os.getcwd(), c.DIR_DAT, db_name)
-    #     return self._database_table_exists(db_path, table_name)
+        If no data available:
+        {"success": True, "data": None}
 
-    # def table_exists(self, table_name, plugin=None, db_name=None):
-    #     """ Return TRUE if given table existsin given plugin, otherwise FALSE """
-    #
-    #     if db_name:
-    #         if not db_name.lower().endswith(".db"):
-    #             db_name += ".db"
-    #     else:
-    #         if plugin:
-    #             db_name = plugin + ".db"
-    #         else:
-    #             db_name = self.name + ".db"
-    #
-    #     if plugin:
-    #         db_path = os.path.join(self.get_dat_path(plugin=plugin), db_name)
-    #     else:
-    #         db_path = os.path.join(self.get_dat_path(), db_name)
-    #
-    #     return self._database_table_exists(db_path, table_name)
+        If database disabled:
+        {"success": False, "data": "Database disabled"} """
 
-    # def _database_table_exists(self, db_path, table_name):
-    #     """ Open connection to database and check if given table exists """
-    #
-    #     if not Path(db_path).is_file():
-    #         return False
-    #
-    #     con = sqlite3.connect(db_path)
-    #     cur = con.cursor()
-    #     exists = False
-    #
-    #     statement = self.get_global_resource("table_exists.sql")
-    #
-    #     try:
-    #         if cur.execute(statement, [table_name]).fetchone():
-    #             exists = True
-    #     except Exception as e:
-    #         logger.error(e)
-    #         self.notify(e)
-    #
-    #     con.close()
-    #     return exists
+        if db_name:
+            if not db_name.lower().endswith(".db"):
+                db_name += ".db"
+        else:
+            db_name = c.FILE_DAT
 
-    def get_res_path(self, plugin=None):
+        db_path = Path.cwd() / c.DIR_DAT / db_name
+        return self._exec_on_db(db_path, sql, *args)
+
+    def exec_sql(self, sql, *args, plugin="", db_name=""):
+        """ Execute raw SQL statement on database for given
+        plugin and return the result.
+
+        param: sql = the SQL query
+        param: *args = arguments for the SQL query
+        param: plugin = name of plugin that DB belongs too
+        param: db_name = name of DB in case it's not the
+        default (the name of the plugin)
+
+        Following data will be returned
+        If error happens:
+        {"success": False, "data": None}
+
+        If no data available:
+        {"success": True, "data": None}
+
+        If database disabled:
+        {"success": False, "data": "Database disabled"} """
+
+        if db_name:
+            if not db_name.lower().endswith(".db"):
+                db_name += ".db"
+        else:
+            if plugin:
+                db_name = plugin + ".db"
+            else:
+                db_name = self.name + ".db"
+
+        plugin = plugin if plugin else self.name
+        db_path = Path(self.get_dat_path(plugin=plugin) / db_name)
+
+        return self._exec_on_db(db_path, sql, *args)
+
+    def _exec_on_db(self, db_path, sql, *args):
+        """ Open database connection and execute SQL statement """
+
+        res = {"success": None, "data": None}
+
+        # Check if database usage is enabled
+        if not self.global_cfg.get("database", "use_db"):
+            res["data"] = "Database disabled"
+            res["success"] = False
+            return res
+
+        timeout = self.global_cfg.get("database", "timeout")
+        db_timeout = timeout if timeout else 5
+
+        try:
+            # Create directory if it doesn't exist
+            directory = os.path.dirname(db_path)
+            os.makedirs(directory, exist_ok=True)
+        except Exception as e:
+            res["data"] = str(e)
+            res["success"] = False
+            logger.error(e)
+            self.notify(e)
+
+        with sqlite3.connect(db_path, timeout=db_timeout) as con:
+            try:
+                cur = con.cursor()
+                cur.execute(sql, args)
+                con.commit()
+
+                res["data"] = cur.fetchall()
+                res["success"] = True
+
+            except Exception as e:
+                res["data"] = str(e)
+                res["success"] = False
+                logger.error(e)
+                self.notify(e)
+
+            return res
+
+    def table_exists_global(self, table_name, db_name=""):
+        """ Return TRUE if given table exists in global database, otherwise FALSE """
+
+        if db_name:
+            if not db_name.lower().endswith(".db"):
+                db_name += ".db"
+        else:
+            db_name = c.FILE_DAT
+
+        db_path = Path(Path.cwd() / c.DIR_DAT / db_name)
+        return self._db_table_exists(db_path, table_name)
+
+    def table_exists(self, table_name, plugin=None, db_name=None):
+        """ Return TRUE if given table exists in given plugin, otherwise FALSE """
+
+        if db_name:
+            if not db_name.lower().endswith(".db"):
+                db_name += ".db"
+        else:
+            if plugin:
+                db_name = plugin + ".db"
+            else:
+                db_name = self.name + ".db"
+
+        plugin = plugin if plugin else self.name
+        db_path = Path(self.get_dat_path(plugin=plugin) / db_name)
+
+        return self._db_table_exists(db_path, table_name)
+
+    def _db_table_exists(self, db_path, table_name):
+        """ Open connection to database and check if given table exists """
+
+        if not Path(db_path).is_file():
+            return False
+
+        con = sqlite3.connect(db_path)
+        cur = con.cursor()
+        exists = False
+
+        statement = self.get_global_resource("table_exists.sql")
+
+        try:
+            if cur.execute(statement, [table_name]).fetchone():
+                exists = True
+        except Exception as e:
+            logger.error(e)
+            self.notify(e)
+
+        con.close()
+        return exists
+
+    def get_res_path(self, plugin=None) -> Path:
         """ Return path of resource directory for given plugin """
         plugin = plugin if plugin else self.name
-        return os.path.join(c.DIR_PLG, plugin, c.DIR_RES)
+        return Path(c.DIR_PLG, plugin, c.DIR_RES)
 
-    def get_cfg_path(self, plugin=None):
+    def get_cfg_path(self, plugin=None) -> Path:
         """ Return path of configuration directory for the given plugin """
         plugin = plugin if plugin else self.name
-        return c.DIR_PLG / plugin / c.DIR_CFG
+        return Path(c.DIR_PLG / plugin / c.DIR_CFG)
 
     def get_cfg_name(self, plugin=None):
         """ Return name of configuration file for given plugin """
         plugin = plugin if plugin else self.name
         return Path(plugin).with_suffix(c.CFG_EXT)
 
-    def get_dat_path(self, plugin=None):
+    def get_dat_path(self, plugin=None) -> Path:
         """ Return path of data directory for given plugin """
         plugin = plugin if plugin else self.name
-        return os.path.join(c.DIR_PLG, plugin, c.DIR_DAT)
+        return Path(c.DIR_PLG, plugin, c.DIR_DAT)
 
-    def get_plg_path(self, plugin=None):
+    def get_plg_path(self, plugin=None) -> Path:
         """ Return path of given plugin directory """
         plugin = plugin if plugin else self.name
-        return os.path.join(c.DIR_PLG, plugin)
+        return Path(c.DIR_PLG, plugin)
 
     def get_plugin(self, plugin_name):
         if plugin_name in self.plugins:
