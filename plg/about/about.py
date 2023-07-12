@@ -10,4 +10,4 @@ class About(TGBFPlugin):
 
     @TGBFPlugin.send_typing
     async def about_callback(self, update: Update, context: CallbackContext):
-        msg = await update.message.reply_text(text="WORKS")
+        await update.message.reply_text(text="WORKS")

@@ -481,16 +481,17 @@ class TGBFPlugin:
         """ Decorator for methods that need to be run in a private chat with the bot """
 
         @wraps(func)
-        def _private(self, update: Update, context: CallbackContext, **kwargs):
-            if not self.cfg.get("private"):
-                return func(self, update, context, **kwargs)
+        async def _private(self, update: Update, context: CallbackContext, **kwargs):
             if (await context.bot.get_chat(update.effective_chat.id)).type == Chat.PRIVATE:
-                return func(self, update, context, **kwargs)
+                if asyncio.iscoroutinefunction(func):
+                    return await func(self, update, context, **kwargs)
+                else:
+                    return func(self, update, context, **kwargs)
 
             if update.message:
                 name = context.bot.username if context.bot.username else context.bot.name
                 msg = f"{emo.ERROR} DM the bot @{name} to use this command"
-                update.message.reply_text(msg)
+                await update.message.reply_text(msg)
 
         return _private
 
@@ -499,15 +500,16 @@ class TGBFPlugin:
         """ Decorator for methods that need to be run in a public group """
 
         @wraps(func)
-        def _public(self, update: Update, context: CallbackContext, **kwargs):
-            if not self.cfg.get("public"):
-                return func(self, update, context, **kwargs)
+        async def _public(self, update: Update, context: CallbackContext, **kwargs):
             if (await context.bot.get_chat(update.effective_chat.id)).type != Chat.PRIVATE:
-                return func(self, update, context, **kwargs)
+                if asyncio.iscoroutinefunction(func):
+                    return await func(self, update, context, **kwargs)
+                else:
+                    return func(self, update, context, **kwargs)
 
             if update.message:
                 msg = f"{emo.ERROR} Can only be used in a public chat"
-                update.message.reply_text(msg)
+                await update.message.reply_text(msg)
 
         return _public
 
@@ -522,21 +524,23 @@ class TGBFPlugin:
         """
 
         @wraps(func)
-        def _owner(self, update: Update, context: CallbackContext, **kwargs):
-            if not self.cfg.get("owner"):
-                return func(self, update, context, **kwargs)
-
+        async def _owner(self, update: Update, context: CallbackContext, **kwargs):
             user_id = update.effective_user.id
 
-            admins_global = self.global_cfg.get("admin", "ids")
-            if admins_global and isinstance(admins_global, list):
-                if user_id in admins_global:
+            admins_global = self.global_cfg.get("admin_tg_id")
+            if user_id == admins_global:
+                if asyncio.iscoroutinefunction(func):
+                    return await func(self, update, context, **kwargs)
+                else:
                     return func(self, update, context, **kwargs)
 
             admins_plugin = self.cfg.get("admins")
             if admins_plugin and isinstance(admins_plugin, list):
                 if user_id in admins_plugin:
-                    return func(self, update, context, **kwargs)
+                    if asyncio.iscoroutinefunction(func):
+                        return await func(self, update, context, **kwargs)
+                    else:
+                        return func(self, update, context, **kwargs)
 
         return _owner
 
