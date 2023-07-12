@@ -35,6 +35,12 @@ class TelegramBot:
             .build()
         )
 
+        # Notify admin about bot start
+        await self.app.updater.bot.send_message(
+            chat_id=self.cfg.get('admin_tg_id'),
+            text=f'{emo.ROBOT} Bot is up and running!'
+        )
+
         await self.load_plugins()
         self.app.run_polling()
 
