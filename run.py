@@ -1,6 +1,6 @@
 import asyncio
-import sys
 import os
+import sys
 import json
 import shutil
 import importlib
@@ -8,7 +8,7 @@ import traceback
 import nest_asyncio
 import emoji as emo
 import utils as utl
-import constants as con
+import constants as c
 
 from loguru import logger
 from dotenv import load_dotenv
@@ -17,6 +17,7 @@ from importlib import reload
 from telegram import Chat, Update
 from telegram.constants import ParseMode
 from telegram.ext import CallbackContext, Application, Defaults, CommandHandler
+from config import ConfigManager
 
 
 class TelegramBot:
@@ -24,6 +25,7 @@ class TelegramBot:
     def __init__(self):
         self.app = None
         self.plugins = list()
+        self.cfg = ConfigManager(c.DIR_CFG / c.FILE_CFG)
 
     async def run(self):
         self.app = (
@@ -39,7 +41,7 @@ class TelegramBot:
     async def load_plugins(self):
         """ Load all plugins from the 'plugins' folder """
         try:
-            for _, folders, _ in os.walk(con.DIR_PLG):
+            for _, folders, _ in os.walk(c.DIR_PLG):
                 for folder in folders:
                     if folder.startswith("_"):
                         continue
@@ -53,7 +55,7 @@ class TelegramBot:
         """ Load a single plugin """
         try:
             module_name, _ = os.path.splitext(name)
-            module_path = f"{con.DIR_PLG}.{module_name}.{module_name}"
+            module_path = f"{c.DIR_PLG}.{module_name}.{module_name}"
             module = importlib.import_module(module_path)
 
             #reload(module)

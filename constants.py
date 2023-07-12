@@ -1,21 +1,23 @@
-import os
+from pathlib import Path
 
-DESCRIPTION = "Python Telegram Bot for Lamden"
+DESCRIPTION = "Python Telegram Bot Framework 2"
 
-# Project folders
-#DIR_SRC = os.path.basename(os.path.dirname(__file__))
-DIR_TEM = "templates"
-DIR_PLG = "plg"
-DIR_RES = "res"
-DIR_CFG = "cfg"
-DIR_LOG = "log"
-DIR_DAT = "dat"
-DIR_TMP = "tmp"
+# Folders
+DIR_TEM = Path('templates')
+DIR_PLG = Path('plg')
+DIR_RES = Path('res')
+DIR_CFG = Path('cfg')
+DIR_LOG = Path('log')
+DIR_DAT = Path('dat')
+DIR_TMP = Path('tmp')
 
-# Project files
-FILE_DAT = "global.db"
-FILE_CFG = "config.json"
-FILE_TKN = "token.json"
+# Extensions
+CFG_EXT = '.cfg'
+DAT_EXT = '.db'
+
+# Files
+FILE_DAT = Path('global').with_suffix(DAT_EXT)
+FILE_CFG = Path('global').with_suffix(CFG_EXT)
 
 # Max Telegram message length
 MAX_TG_MSG_LEN = 4096

@@ -6,7 +6,6 @@ import inspect
 import asyncio
 from functools import wraps
 
-from enum import Enum
 from telegram.constants import ChatAction
 
 import constants as c
@@ -20,6 +19,7 @@ from telegram import Chat, Update, Message
 from telegram.ext import CallbackContext, CallbackQueryHandler, ConversationHandler, BaseHandler
 from datetime import datetime, timedelta
 
+from config import ConfigManager
 from run import TelegramBot
 
 
@@ -35,13 +35,13 @@ class TGBFPlugin:
         self._handlers: List[BaseHandler] = list()
 
         # Access to global config
-        #self._global_config = self._bot.config
+        self._global_cfg = self._tgb.cfg
 
         # Access to plugin config
-        #self._config = self.get_cfg_manager()
+        self._cfg = ConfigManager(self.get_cfg_path() / self.get_cfg_name())
 
         # All web endpoints for this plugin
-        #self._endpoints: Dict[str, EndpointAction] = dict()
+        # self._endpoints: Dict[str, EndpointAction] = dict()
 
         # # Create global db table for wallets
         # if not self.global_table_exists("wallets"):
@@ -49,61 +49,17 @@ class TGBFPlugin:
         #     self.execute_global_sql(sql)
 
     async def __aenter__(self):
-        """ This method gets executed after __init__() but before
-        load(). Make sure to return 'self' if you override it """
+        """ Executes init() method. Make sure to return 'self' if you override it """
         await self.init()
         return self
 
     async def __aexit__(self, exc_type, exc_value, traceback):
-        """ This method gets executed after __init__() and after load() """
+        """ This method gets executed after the plugin is loaded """
         pass
 
     async def init(self):
         method = inspect.currentframe().f_code.co_name
         raise NotImplementedError(f"Method '{method}' not implemented")
-
-    def callback_cfg_change(self, value, *keys):
-        """ Overwrite this method if you need some logic to be executed
-         after the plugin configuration changed """
-        pass
-
-    # def get_cfg_manager(self, plugin: str = None, on_change: Callable = None, pass_args=True) -> ConfigManager:
-    #     """ Returns a plugin configuration. If the config file
-    #     doesn't exist then it will be created.
-    #
-    #     If you don't provide 'plugin' and 'on_change' then the
-    #     default callback_cfg_change() will be used as callback
-    #     method that will be triggered on changes in the file.
-    #
-    #     If 'pass_args' is True then the settings-change context
-    #     (what has changed, key and value) will be passed to the
-    #     callback method. If False then nothing will be passed. """
-    #
-    #     if plugin:
-    #         cfg_file = plugin.lower() + ".json"
-    #         cfg_fold = os.path.join(self.get_cfg_path(plugin=plugin))
-    #     else:
-    #         cfg_file = f"{self.name}.json"
-    #         cfg_fold = os.path.join(self.get_cfg_path())
-    #
-    #         on_change = on_change if on_change else self.callback_cfg_change
-    #
-    #     cfg_path = os.path.join(cfg_fold, cfg_file)
-    #
-    #     # Create config directory if it doesn't exist
-    #     os.makedirs(cfg_fold, exist_ok=True)
-    #
-    #     # Create config file if it doesn't exist
-    #     if not os.path.isfile(cfg_path):
-    #         with open(cfg_path, 'w') as file:
-    #             # Make it a valid JSON file
-    #             file.write("{}")
-    #
-    #     # Return plugin config
-    #     return ConfigManager(
-    #         cfg_path,
-    #         callback=on_change,
-    #         callback_pass_args=pass_args)
 
     @property
     def tgb(self) -> TelegramBot:
@@ -117,18 +73,18 @@ class TGBFPlugin:
     @property
     def handle(self) -> str:
         """ Return the command string that triggers the plugin """
-        handle = self.config.get("handle")
+        handle = self.cfg.get("handle")
         return handle.lower() if handle else self.name
 
     @property
     def category(self) -> str:
         """ Return the category of the plugin for the 'help' command """
-        return self.config.get("category")
+        return self.cfg.get("category")
 
     @property
     def description(self) -> str:
         """ Return the description of the plugin """
-        return self.config.get("description")
+        return self.cfg.get("description")
 
     @property
     def plugins(self) -> List:
@@ -140,15 +96,15 @@ class TGBFPlugin:
         """ Return a tuple with all currently active jobs """
         return self.tgb.app.job_queue.jobs()
 
-    # @property
-    # def global_config(self) -> ConfigManager:
-    #     """ Return the global configuration """
-    #     return self._global_config
+    @property
+    def global_cfg(self) -> ConfigManager:
+        """ Return the global configuration """
+        return self._global_cfg
 
-    # @property
-    # def config(self) -> ConfigManager:
-    #     """ Return the configuration for this plugin """
-    #     return self._config
+    @property
+    def cfg(self) -> ConfigManager:
+        """ Return the configuration for this plugin """
+        return self._cfg
 
     @property
     def handlers(self) -> List[BaseHandler]:
@@ -444,27 +400,28 @@ class TGBFPlugin:
     #     return exists
 
     def get_res_path(self, plugin=None):
-        """ Return path of resource directory for this plugin """
-        if not plugin:
-            plugin = self.name
+        """ Return path of resource directory for given plugin """
+        plugin = plugin if plugin else self.name
         return os.path.join(c.DIR_PLG, plugin, c.DIR_RES)
 
     def get_cfg_path(self, plugin=None):
-        """ Return path of configuration directory for this plugin """
-        if not plugin:
-            plugin = self.name
-        return os.path.join(c.DIR_PLG, plugin, c.DIR_CFG)
+        """ Return path of configuration directory for the given plugin """
+        plugin = plugin if plugin else self.name
+        return c.DIR_PLG / plugin / c.DIR_CFG
+
+    def get_cfg_name(self, plugin=None):
+        """ Return name of configuration file for given plugin """
+        plugin = plugin if plugin else self.name
+        return Path(plugin).with_suffix(c.CFG_EXT)
 
     def get_dat_path(self, plugin=None):
-        """ Return path of data directory for this plugin """
-        if not plugin:
-            plugin = self.name
+        """ Return path of data directory for given plugin """
+        plugin = plugin if plugin else self.name
         return os.path.join(c.DIR_PLG, plugin, c.DIR_DAT)
 
     def get_plg_path(self, plugin=None):
-        """ Return path of current plugin directory """
-        if not plugin:
-            plugin = self.name
+        """ Return path of given plugin directory """
+        plugin = plugin if plugin else self.name
         return os.path.join(c.DIR_PLG, plugin)
 
     def get_plugin(self, name):
