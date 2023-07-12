@@ -109,7 +109,7 @@ def str2bool(v):
 def split_msg(msg, max_len=None, split_char="\n", only_one=False):
     """ Restrict message length to max characters as defined by Telegram """
     if not max_len:
-        import t2xbot.constants as con
+        import constants as con
         max_len = con.MAX_TG_MSG_LEN
 
     if only_one:
@@ -117,6 +117,7 @@ def split_msg(msg, max_len=None, split_char="\n", only_one=False):
 
     remaining = msg
     messages = list()
+
     while len(remaining) > max_len:
         split_at = remaining[:max_len].rfind(split_char)
         message = remaining[:max_len][:split_at]
