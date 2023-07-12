@@ -458,7 +458,6 @@ class TGBFPlugin:
             datetime.utcnow() + timedelta(seconds=after_secs),
             data=f"{message.chat_id}_{message.message_id}")
 
-    # TODO: Set correct admin ID
     async def notify(self, some_input):
         """ All admins in global config will get a message with the given text.
          Primarily used for exceptions but can be used with other inputs too. """
@@ -467,7 +466,8 @@ class TGBFPlugin:
             some_input = repr(some_input)
 
         try:
-            await self.tgb.app.updater.bot.send_message(134166731, f"{emo.ALERT} {some_input}")
+            admin = self.cfg.get('admin_tg_id')
+            await self.tgb.app.updater.bot.send_message(admin, f"{emo.ALERT} {some_input}")
         except Exception as e:
             error = f"Not possible to notify admin id '{134166731}'"
             logger.error(f"{error}: {e}")
