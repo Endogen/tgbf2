@@ -75,7 +75,6 @@ class TelegramBot:
     async def enable_plugin(self, name):
         """ Load a single plugin """
 
-
         try:
             module_name, _ = os.path.splitext(name)
             module_path = f"{c.DIR_PLG}.{module_name}.{module_name}"

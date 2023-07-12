@@ -466,11 +466,12 @@ class TGBFPlugin:
         if isinstance(some_input, Exception):
             some_input = repr(some_input)
 
+        admin = self.cfg.get('admin_tg_id')
+
         try:
-            admin = self.cfg.get('admin_tg_id')
             await self.tgb.app.updater.bot.send_message(admin, f"{emo.ALERT} {some_input}")
         except Exception as e:
-            error = f"Not possible to notify admin id '{134166731}'"
+            error = f"Not possible to notify admin id '{admin}'"
             logger.error(f"{error}: {e}")
             return False
 
