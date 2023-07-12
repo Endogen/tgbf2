@@ -96,7 +96,7 @@ class TelegramBot:
             logger.error(msg)
             return False, str(e)
 
-    async def _update_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    async def _update_handler(self, update: Update, context: CallbackContext) -> None:
         """
         Update a plugin by uploading a file to the bot.
 
@@ -115,12 +115,12 @@ class TelegramBot:
             return
         if not update.message:
             return
-        if context.bot.get_chat(update.message.chat_id).type != Chat.PRIVATE:
-            return
         if update.effective_user.id is not self.cfg.get('admin_tg_id'):
             return
+        if (await context.bot.get_chat(update.message.chat_id)).type != Chat.PRIVATE:
+            return
 
-        name = update.message.effective_attachment.file_name.lower()
+        name = update.message.document.file_name
         zipped = False
 
         try:
@@ -141,18 +141,19 @@ class TelegramBot:
                 await update.message.reply_text(msg)
                 return
 
-            file = context.bot.getFile(update.message.document.file_id)
+            file = await update.message.effective_attachment.get_file()
 
             if zipped:
                 os.makedirs(c.DIR_TMP, exist_ok=True)
-                zip_path = os.path.join(c.DIR_TMP, name)
-                file.download(zip_path)
+                zip_path = c.DIR_TMP / name
+
+                await file.download_to_drive(zip_path)
 
                 with ZipFile(zip_path, 'r') as zip_file:
                     plugin_path = os.path.join(c.DIR_PLG, plugin_name)
                     zip_file.extractall(plugin_path)
             else:
-                file.download(os.path.join(c.DIR_PLG, plugin_name, name))
+                await file.download_to_drive(c.DIR_PLG / plugin_name / name)
 
             self.disable_plugin(plugin_name)
             self.enable_plugin(plugin_name)
