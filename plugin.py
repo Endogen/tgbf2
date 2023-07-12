@@ -481,9 +481,9 @@ class TGBFPlugin:
 
         @wraps(func)
         def _private(self, update: Update, context: CallbackContext, **kwargs):
-            if self.config.get("private") == False:
+            if not self.cfg.get("private"):
                 return func(self, update, context, **kwargs)
-            if context.bot.get_chat(update.effective_chat.id).type == Chat.PRIVATE:
+            if (await context.bot.get_chat(update.effective_chat.id)).type == Chat.PRIVATE:
                 return func(self, update, context, **kwargs)
 
             if update.message:
@@ -499,9 +499,9 @@ class TGBFPlugin:
 
         @wraps(func)
         def _public(self, update: Update, context: CallbackContext, **kwargs):
-            if self.config.get("public") == False:
+            if not self.cfg.get("public"):
                 return func(self, update, context, **kwargs)
-            if context.bot.get_chat(update.effective_chat.id).type != Chat.PRIVATE:  # TODO: Rework
+            if (await context.bot.get_chat(update.effective_chat.id)).type != Chat.PRIVATE:
                 return func(self, update, context, **kwargs)
 
             if update.message:
@@ -522,7 +522,7 @@ class TGBFPlugin:
 
         @wraps(func)
         def _owner(self, update: Update, context: CallbackContext, **kwargs):
-            if self.config.get("owner") == False:
+            if not self.cfg.get("owner"):
                 return func(self, update, context, **kwargs)
 
             user_id = update.effective_user.id
