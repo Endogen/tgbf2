@@ -134,10 +134,16 @@ def encode_url(trxid):
     return ul.quote_plus(trxid)
 
 
-def id(length=8):
+def random_id(length=8):
     import string, random
     alphabet = string.ascii_uppercase + string.digits
     return ''.join(random.choices(alphabet, k=length))
+
+
+def md5(input_str: str, to_int=False):
+    import hashlib
+    md5_hash = hashlib.md5(input_str.encode("utf-8")).hexdigest()
+    return int(md5_hash, 16) if to_int else md5_hash
 
 
 def to_unix_time(date_time, millis=False):

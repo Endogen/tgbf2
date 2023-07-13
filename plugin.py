@@ -137,7 +137,7 @@ class TGBFPlugin:
             how to call only the 'right' callback function.
             """
             if isinstance(handler, (CallbackQueryHandler, ConversationHandler)):
-                group = int(hashlib.md5(self.name.encode("utf-8")).hexdigest(), 16)
+                group = utl.md5(self.name, to_int=True)
             else:
                 group = 0
 
@@ -226,7 +226,7 @@ class TGBFPlugin:
             first=first,
             last=last,
             data=data,
-            name=name if name else (self.name + "_" + utl.id()))
+            name=name if name else (self.name + "_" + utl.random_id()))
 
     def run_once(self, callback, when, data=None, name=None):
         """ Executes the provided callback function only one time.
@@ -243,7 +243,7 @@ class TGBFPlugin:
             callback,
             when,
             data=data,
-            name=name if name else (self.name + "_" + utl.id()))
+            name=name if name else (self.name + "_" + utl.random_id()))
 
     def exec_sql_global(self, sql, *args, db_name=""):
         """ Execute raw SQL statement on the global
