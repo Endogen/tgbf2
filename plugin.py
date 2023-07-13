@@ -1,5 +1,4 @@
 import os
-import hashlib
 import sqlite3
 import inspect
 
@@ -36,7 +35,7 @@ class TGBFPlugin:
         self._handlers: List[BaseHandler] = list()
 
         # Access to global config
-        self._global_cfg = self._tgb.cfg
+        self._cfg_global = self._tgb.cfg
 
         # Access to plugin config
         self._cfg = ConfigManager(self.get_cfg_path() / self.get_cfg_name())
@@ -103,9 +102,9 @@ class TGBFPlugin:
         return self.tgb.app.job_queue.jobs()
 
     @property
-    def global_cfg(self) -> ConfigManager:
+    def cfg_global(self) -> ConfigManager:
         """ Return the global configuration """
-        return self._global_cfg
+        return self._cfg_global
 
     @property
     def cfg(self) -> ConfigManager:
@@ -156,13 +155,13 @@ class TGBFPlugin:
     #
     #     logger.info(f"Plugin '{self.name}': Endpoint '{name}' added")
 
-    def get_usage(self, replace: dict = None):
+    async def get_usage(self, replace: dict = None):
         """ Return how to use a command. Default resource '<plugin>.md'
          will be loaded from the resource folder and if you provide a
          dict with '<placeholder>,<value>' entries then placeholders in
          the resource will be replaced with the corresponding <value> """
 
-        usage = self.get_resource(f"{self.name}.md")
+        usage = await self.get_resource(f"{self.name}.txt")
 
         if usage:
             usage = usage.replace("{{handle}}", self.handle)
@@ -173,23 +172,24 @@ class TGBFPlugin:
 
             return usage
 
-        return None
+        await self.notify(f'No usage info for plugin <b>{self.name}</b>')
+        return f'{emo.ERROR} Could not retrieve usage info'
 
-    def get_global_resource(self, filename):
+    async def get_global_resource(self, filename):
         """ Return the content of the given file
         from the global resource directory """
 
         path = os.path.join(os.getcwd(), c.DIR_RES, filename)
-        return self._get_resource_content(path)
+        return await self._get_resource_content(path)
 
-    def get_resource(self, filename, plugin=None):
+    async def get_resource(self, filename, plugin=None):
         """ Return the content of the given file from
         the resource directory of the given plugin """
 
         path = os.path.join(self.get_res_path(plugin), filename)
-        return self._get_resource_content(path)
+        return await self._get_resource_content(path)
 
-    def _get_resource_content(self, path):
+    async def _get_resource_content(self, path):
         """ Return the content of the file in the given path """
 
         try:
@@ -197,18 +197,17 @@ class TGBFPlugin:
                 return f.read()
         except Exception as e:
             logger.error(e)
-            self.notify(e)
-            return None
+            await self.notify(e)
 
-    def get_jobs(self, name=None) -> Tuple['Job[CCT]', ...]:
+    async def get_jobs(self, name=None) -> Tuple['Job[CCT]', ...]:
         """ Return jobs with given name or all jobs if not name given """
 
         if name:
             # Get all jobs with given name
-            return self.tgb.app.job_queue.get_jobs_by_name(name)
+            return await self.tgb.app.job_queue.get_jobs_by_name(name)
         else:
             # Return all jobs
-            return self.tgb.app.job_queue.jobs()
+            return await self.tgb.app.job_queue.jobs()
 
     def run_repeating(self, callback, interval, first=0, last=None, data=None, name=None):
         """ Executes the provided callback function indefinitely.
@@ -220,13 +219,15 @@ class TGBFPlugin:
         name of the job (if no 'name' provided) will be the name
         of the plugin plus some random data"""
 
+        name = name if name else (self.name + "_" + utl.random_id())
+
         return self.tgb.app.job_queue.run_repeating(
             callback,
             interval,
             first=first,
             last=last,
             data=data,
-            name=name if name else (self.name + "_" + utl.random_id()))
+            name=name)
 
     def run_once(self, callback, when, data=None, name=None):
         """ Executes the provided callback function only one time.
@@ -245,7 +246,7 @@ class TGBFPlugin:
             data=data,
             name=name if name else (self.name + "_" + utl.random_id()))
 
-    def exec_sql_global(self, sql, *args, db_name=""):
+    async def exec_sql_global(self, sql, *args, db_name=""):
         """ Execute raw SQL statement on the global
         database and return the result
 
@@ -272,7 +273,7 @@ class TGBFPlugin:
         db_path = Path.cwd() / c.DIR_DAT / db_name
         return self._exec_on_db(db_path, sql, *args)
 
-    def exec_sql(self, sql, *args, plugin="", db_name=""):
+    async def exec_sql(self, sql, *args, plugin="", db_name=""):
         """ Execute raw SQL statement on database for given
         plugin and return the result.
 
@@ -306,18 +307,18 @@ class TGBFPlugin:
 
         return self._exec_on_db(db_path, sql, *args)
 
-    def _exec_on_db(self, db_path, sql, *args):
+    async def _exec_on_db(self, db_path, sql, *args):
         """ Open database connection and execute SQL statement """
 
         res = {"data": None, "success": None}
 
         # Check if database usage is enabled
-        if not self.global_cfg.get("database", "use_db"):
+        if not self.cfg_global.get("database", "use_db"):
             res["data"] = "Database disabled"
             res["success"] = False
             return res
 
-        timeout = self.global_cfg.get("database", "timeout")
+        timeout = self.cfg_global.get("database", "timeout")
         db_timeout = timeout if timeout else 5
 
         try:
@@ -328,7 +329,7 @@ class TGBFPlugin:
             res["data"] = str(e)
             res["success"] = False
             logger.error(e)
-            self.notify(e)
+            await self.notify(e)
 
         with sqlite3.connect(db_path, timeout=db_timeout) as con:
             try:
@@ -343,11 +344,11 @@ class TGBFPlugin:
                 res["data"] = str(e)
                 res["success"] = False
                 logger.error(e)
-                self.notify(e)
+                await self.notify(e)
 
             return res
 
-    def table_exists_global(self, table_name, db_name=""):
+    async def table_exists_global(self, table_name, db_name=""):
         """ Return TRUE if given table exists in global database, otherwise FALSE """
 
         if db_name:
@@ -359,7 +360,7 @@ class TGBFPlugin:
         db_path = Path(Path.cwd() / c.DIR_DAT / db_name)
         return self._db_table_exists(db_path, table_name)
 
-    def table_exists(self, table_name, plugin=None, db_name=None):
+    async def table_exists(self, table_name, plugin=None, db_name=None):
         """ Return TRUE if given table exists in given plugin, otherwise FALSE """
 
         if db_name:
@@ -374,9 +375,9 @@ class TGBFPlugin:
         plugin = plugin if plugin else self.name
         db_path = Path(self.get_dat_path(plugin=plugin) / db_name)
 
-        return self._db_table_exists(db_path, table_name)
+        return await self._db_table_exists(db_path, table_name)
 
-    def _db_table_exists(self, db_path, table_name):
+    async def _db_table_exists(self, db_path, table_name):
         """ Open connection to database and check if given table exists """
 
         if not Path(db_path).is_file():
@@ -386,14 +387,14 @@ class TGBFPlugin:
         cur = con.cursor()
         exists = False
 
-        statement = self.get_global_resource("table_exists.sql")
+        statement = await self.get_global_resource("table_exists.sql")
 
         try:
             if cur.execute(statement, [table_name]).fetchone():
                 exists = True
         except Exception as e:
             logger.error(e)
-            self.notify(e)
+            await self.notify(e)
 
         con.close()
         return exists
@@ -431,11 +432,11 @@ class TGBFPlugin:
         """ Return TRUE if the given plugin is enabled or FALSE otherwise """
         return plugin_name in self.plugins
 
-    def is_private(self, message: Message):
+    async def is_private(self, message: Message):
         """ Check if message was sent in a private chat or not """
-        return self.tgb.app.updater.bot.get_chat(message.chat_id).type == Chat.PRIVATE
+        return await self.tgb.app.updater.bot.get_chat(message.chat_id).type == Chat.PRIVATE
 
-    async def remove_msg_after(self, message: Message, after_secs):
+    def remove_msg_after(self, message: Message, after_secs):
         """ Remove a Telegram message after a given time """
 
         async def remove_msg_job(context: CallbackContext):
@@ -460,7 +461,7 @@ class TGBFPlugin:
         if isinstance(some_input, Exception):
             some_input = repr(some_input)
 
-        admin = self.cfg.get('admin_tg_id')
+        admin = self.cfg_global.get('admin_tg_id')
 
         try:
             await self.tgb.app.updater.bot.send_message(admin, f"{emo.ALERT} {some_input}")
@@ -523,7 +524,7 @@ class TGBFPlugin:
             user_id = update.effective_user.id
 
             admins_plugin = self.cfg.get("admins")
-            admins_global = self.global_cfg.get("admin_tg_id")
+            admins_global = self.cfg_global.get("admin_tg_id")
 
             if user_id in admins_plugin or user_id == admins_global:
                 if asyncio.iscoroutinefunction(func):
