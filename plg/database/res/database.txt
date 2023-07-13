@@ -1,0 +1,7 @@
+<b>How to use the {{handle}} plugin</b>
+
+◾️ Insert into database
+<code>/{{handle}} insert [some text]</code>
+
+◾️ Select from database
+<code>/{{handle}} select [number of entries]</code>

@@ -1,4 +1,4 @@
-<b>How to use the admin plugin</b>
+<b>How to use the {{handle}} plugin</b>
 
 ◾️ Disable plugin
 <code>/{{handle}} disable [plugin name]</code>

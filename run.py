@@ -53,7 +53,7 @@ class TelegramBot:
             text=f'{emo.ROBOT} Bot is up and running!'
         )
 
-        # Start polling updates
+        # Start polling for updates
         self.app.run_polling(drop_pending_updates=True)
 
     async def load_plugins(self):
@@ -103,7 +103,7 @@ class TelegramBot:
             plugin = self.plugins[name]
 
             try:
-                # Run plugins cleanup method
+                # Run plugins own cleanup method
                 await plugin.cleanup()
             except Exception as e:
                 msg = f"Plugin '{plugin.name}' cleanup failed: {e}"
