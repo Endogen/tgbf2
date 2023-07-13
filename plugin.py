@@ -309,7 +309,7 @@ class TGBFPlugin:
     def _exec_on_db(self, db_path, sql, *args):
         """ Open database connection and execute SQL statement """
 
-        res = {"success": None, "data": None}
+        res = {"data": None, "success": None}
 
         # Check if database usage is enabled
         if not self.global_cfg.get("database", "use_db"):
@@ -522,20 +522,14 @@ class TGBFPlugin:
         async def _owner(self, update: Update, context: CallbackContext, **kwargs):
             user_id = update.effective_user.id
 
+            admins_plugin = self.cfg.get("admins")
             admins_global = self.global_cfg.get("admin_tg_id")
-            if user_id == admins_global:
+
+            if user_id in admins_plugin or user_id == admins_global:
                 if asyncio.iscoroutinefunction(func):
                     return await func(self, update, context, **kwargs)
                 else:
                     return func(self, update, context, **kwargs)
-
-            admins_plugin = self.cfg.get("admins")
-            if admins_plugin and isinstance(admins_plugin, list):
-                if user_id in admins_plugin:
-                    if asyncio.iscoroutinefunction(func):
-                        return await func(self, update, context, **kwargs)
-                    else:
-                        return func(self, update, context, **kwargs)
 
         return _owner
 
@@ -571,15 +565,13 @@ class TGBFPlugin:
         @wraps(func)
         async def _send_typing(self, update, context, **kwargs):
             # Make sure that edited messages will not trigger any functionality
-            if update.edited_message:
-                return
-
-            try:
-                await context.bot.send_chat_action(
-                    chat_id=update.effective_chat.id,
-                    action=ChatAction.TYPING)
-            except:
-                pass
+            if not update.edited_message:
+                try:
+                    await context.bot.send_chat_action(
+                        chat_id=update.effective_chat.id,
+                        action=ChatAction.TYPING)
+                except:
+                    pass
 
             if asyncio.iscoroutinefunction(func):
                 return await func(self, update, context, **kwargs)
@@ -601,8 +593,9 @@ class TGBFPlugin:
             try:
                 if blacklist_chats and (update.effective_chat.id in blacklist_chats):
                     name = context.bot.username if context.bot.username else context.bot.name
-                    msg = self.cfg.get("blacklist_msg").replace("{{name}}", name)  # TODO: Rework
+                    msg = self.cfg.get("blacklist_msg").replace("{{name}}", name)
                     await update.message.reply_text(msg, disable_web_page_preview=True)
+                    return
             except:
                 pass
 
@@ -624,12 +617,11 @@ class TGBFPlugin:
             whitelist_chats = self.cfg.get("whitelist")
 
             try:
-                if whitelist_chats and (update.effective_chat.id in whitelist_chats):
-                    return func(self, update, context, **kwargs)
-                else:
+                if not whitelist_chats or (update.effective_chat.id not in whitelist_chats):
                     name = context.bot.username if context.bot.username else context.bot.name
-                    msg = self.cfg.get("whitelist_msg").replace("{{name}}", name)  # TODO: Rework
+                    msg = self.cfg.get("whitelist_msg").replace("{{name}}", name)
                     await update.message.reply_text(msg, disable_web_page_preview=True)
+                    return
             except:
                 pass
 
