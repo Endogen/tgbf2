@@ -20,8 +20,6 @@ from telegram.ext import Application, Defaults, MessageHandler, ContextTypes, fi
 from config import ConfigManager
 
 
-# TODO: Currently settings are in global config and also in .env
-
 class TelegramBot:
 
     def __init__(self):
