@@ -37,12 +37,6 @@ class TelegramBot:
             .build()
         )
 
-        # Notify admin about bot start
-        await self.app.updater.bot.send_message(
-            chat_id=self.cfg.get('admin_tg_id'),
-            text=f'{emo.ROBOT} Bot is up and running!'
-        )
-
         # Load all plugins
         await self.load_plugins()
 
@@ -55,8 +49,14 @@ class TelegramBot:
         logger.info("Setting up error handling...")
         self.app.add_error_handler(self._error_handler)
 
+        # Notify admin about bot start
+        await self.app.updater.bot.send_message(
+            chat_id=self.cfg.get('admin_tg_id'),
+            text=f'{emo.ROBOT} Bot is up and running!'
+        )
+
         # Start polling updates
-        self.app.run_polling()
+        self.app.run_polling(drop_pending_updates=True)
 
     async def load_plugins(self):
         """ Load all plugins from the 'plugins' folder """
@@ -66,7 +66,7 @@ class TelegramBot:
                     if folder.startswith("_"):
                         continue
                     logger.info(f"Plugin '{folder}' loading...")
-                    await self.enable_plugin(f"{folder}.py")
+                    await self.enable_plugin(folder)
                 break
         except Exception as e:
             logger.error(e)
@@ -78,11 +78,10 @@ class TelegramBot:
         await self.disable_plugin(name)
 
         try:
-            module_name, _ = os.path.splitext(name)
-            module_path = f"{c.DIR_PLG}.{module_name}.{module_name}"
+            module_path = f"{c.DIR_PLG}.{name}.{name}"
             module = importlib.import_module(module_path)
 
-            async with getattr(module, module_name.capitalize())(self) as plugin:
+            async with getattr(module, name.capitalize())(self) as plugin:
                 try:
                     self.plugins[name] = plugin
                     msg = f"Plugin '{name}' enabled"
@@ -113,11 +112,12 @@ class TelegramBot:
                 logger.error(msg)
                 return False, str(e)
 
-            # Remove endpoints  # TODO: Currently not possible. Switch to FastAPI?
-            if plugin.endpoints:
-                msg = f"Not possible to disable a plugin that has an endpoint"
-                logger.warning(msg)
-                return False, msg
+            # TODO: Currently not possible. Switch to FastAPI?
+            # # Remove endpoints
+            # if plugin.endpoints:
+            #     msg = f"Not possible to disable a plugin that has an endpoint"
+            #     logger.warning(msg)
+            #     return False, msg
 
             # Remove plugin handlers
             for handler in plugin.handlers:
