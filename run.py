@@ -6,8 +6,6 @@ import json
 import shutil
 import importlib
 import traceback
-from pathlib import Path
-
 import nest_asyncio
 import emoji as emo
 import utils as utl
@@ -16,12 +14,13 @@ import constants as c
 from loguru import logger
 from dotenv import load_dotenv
 from zipfile import ZipFile
-from importlib import reload
 from telegram import Chat, Update
 from telegram.constants import ParseMode
 from telegram.ext import Application, Defaults, MessageHandler, ContextTypes, filters, CallbackContext
 from config import ConfigManager
 
+
+# TODO: Currently settings are in global config and also in .env
 
 class TelegramBot:
 
@@ -75,25 +74,27 @@ class TelegramBot:
     async def enable_plugin(self, name):
         """ Load a single plugin """
 
+        # If already enabled, disable first
+        await self.disable_plugin(name)
+
         try:
             module_name, _ = os.path.splitext(name)
             module_path = f"{c.DIR_PLG}.{module_name}.{module_name}"
             module = importlib.import_module(module_path)
 
-            reload(module)
-
             async with getattr(module, module_name.capitalize())(self) as plugin:
                 try:
                     self.plugins[name] = plugin
-                    msg = f"Plugin '{plugin.name}' enabled"
+                    msg = f"Plugin '{name}' enabled"
                     logger.info(msg)
                     return True, msg
                 except Exception as e:
-                    msg = f"ERROR: Plugin '{plugin.name}' initialization failed: {e}"
+                    msg = f"Plugin '{name}' initialization failed: {e}"
                     logger.error(msg)
                     return False, str(e)
+
         except Exception as e:
-            msg = f"ERROR: Plugin '{name}' can not be enabled: {e}"
+            msg = f"Plugin '{name}' can not be enabled: {e}"
             logger.error(msg)
             return False, str(e)
 
@@ -104,28 +105,29 @@ class TelegramBot:
         if name in self.plugins:
             plugin = self.plugins[name]
 
-            # Remove endpoints  # TODO: Currently not possible
+            try:
+                # Run plugins cleanup method
+                await plugin.cleanup()
+            except Exception as e:
+                msg = f"Plugin '{plugin.name}' cleanup failed: {e}"
+                logger.error(msg)
+                return False, str(e)
+
+            # Remove endpoints  # TODO: Currently not possible. Switch to FastAPI?
             if plugin.endpoints:
                 msg = f"Not possible to disable a plugin that has an endpoint"
-                logger.info(msg)
+                logger.warning(msg)
                 return False, msg
 
             # Remove plugin handlers
             for handler in plugin.handlers:
                 self.app.remove_handler(handler)
 
-            # Remove plugin from list of all plugins
+            # Remove plugin
+            del plugin
             del self.plugins[name]
 
-            try:
-                # Run plugins cleanup method
-                plugin.cleanup()
-            except Exception as e:
-                msg = f"Plugin '{plugin.name}' cleanup failed: {e}"
-                logger.error(msg)
-                return False, str(e)
-
-            msg = f"Plugin '{plugin.name}' disabled"
+            msg = f"Plugin '{name}' disabled"
             logger.info(msg)
             return True, msg
 
@@ -188,8 +190,8 @@ class TelegramBot:
             else:
                 await file.download_to_drive(c.DIR_PLG / plugin_name / name)
 
-            self.disable_plugin(plugin_name)
-            self.enable_plugin(plugin_name)
+            await self.disable_plugin(plugin_name)
+            await self.enable_plugin(plugin_name)
 
             shutil.rmtree(c.DIR_TMP, ignore_errors=True)
 
