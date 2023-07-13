@@ -179,7 +179,7 @@ class TGBFPlugin:
         """ Return the content of the given file
         from the global resource directory """
 
-        path = os.path.join(os.getcwd(), c.DIR_RES, filename)
+        path = Path(Path.cwd() / c.DIR_RES / filename)
         return await self._get_resource_content(path)
 
     async def get_resource(self, filename, plugin=None):
@@ -305,21 +305,12 @@ class TGBFPlugin:
         plugin = plugin if plugin else self.name
         db_path = Path(self.get_dat_path(plugin=plugin) / db_name)
 
-        return self._exec_on_db(db_path, sql, *args)
+        return await self._exec_on_db(db_path, sql, *args)
 
     async def _exec_on_db(self, db_path, sql, *args):
         """ Open database connection and execute SQL statement """
 
         res = {"data": None, "success": None}
-
-        # Check if database usage is enabled
-        if not self.cfg_global.get("database", "use_db"):
-            res["data"] = "Database disabled"
-            res["success"] = False
-            return res
-
-        timeout = self.cfg_global.get("database", "timeout")
-        db_timeout = timeout if timeout else 5
 
         try:
             # Create directory if it doesn't exist
@@ -331,7 +322,7 @@ class TGBFPlugin:
             logger.error(e)
             await self.notify(e)
 
-        with sqlite3.connect(db_path, timeout=db_timeout) as con:
+        with sqlite3.connect(db_path, timeout=5) as con:
             try:
                 cur = con.cursor()
                 cur.execute(sql, args)
@@ -380,7 +371,7 @@ class TGBFPlugin:
     async def _db_table_exists(self, db_path, table_name):
         """ Open connection to database and check if given table exists """
 
-        if not Path(db_path).is_file():
+        if not db_path.is_file():
             return False
 
         con = sqlite3.connect(db_path)
