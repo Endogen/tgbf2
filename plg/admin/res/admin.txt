@@ -1,0 +1,7 @@
+<b>How to use the admin plugin</b>
+
+◾️ Disable plugin
+<code>/{{handle}} disable [plugin name]</code>
+
+◾️ Enable plugin
+<code>/{{handle}} enable [plugin name]</code>
