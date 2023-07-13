@@ -591,18 +591,17 @@ class TGBFPlugin:
             blacklist_chats = self.cfg.get("blacklist")
 
             try:
-                if blacklist_chats and (update.effective_chat.id in blacklist_chats):
-                    name = context.bot.username if context.bot.username else context.bot.name
-                    msg = self.cfg.get("blacklist_msg").replace("{{name}}", name)
-                    await update.message.reply_text(msg, disable_web_page_preview=True)
-                    return
+                if blacklist_chats and (update.effective_chat.id not in blacklist_chats):
+                    if asyncio.iscoroutinefunction(func):
+                        return await func(self, update, context, **kwargs)
+                    else:
+                        return func(self, update, context, **kwargs)
             except:
                 pass
 
-            if asyncio.iscoroutinefunction(func):
-                return await func(self, update, context, **kwargs)
-            else:
-                return func(self, update, context, **kwargs)
+            name = context.bot.username if context.bot.username else context.bot.name
+            msg = self.cfg.get("blacklist_msg").replace("{{name}}", name)
+            await update.message.reply_text(msg, disable_web_page_preview=True)
 
         return _blacklist
 
@@ -617,17 +616,16 @@ class TGBFPlugin:
             whitelist_chats = self.cfg.get("whitelist")
 
             try:
-                if not whitelist_chats or (update.effective_chat.id not in whitelist_chats):
-                    name = context.bot.username if context.bot.username else context.bot.name
-                    msg = self.cfg.get("whitelist_msg").replace("{{name}}", name)
-                    await update.message.reply_text(msg, disable_web_page_preview=True)
-                    return
+                if whitelist_chats and (update.effective_chat.id in whitelist_chats):
+                    if asyncio.iscoroutinefunction(func):
+                        return await func(self, update, context, **kwargs)
+                    else:
+                        return func(self, update, context, **kwargs)
             except:
                 pass
 
-            if asyncio.iscoroutinefunction(func):
-                return await func(self, update, context, **kwargs)
-            else:
-                return func(self, update, context, **kwargs)
+            name = context.bot.username if context.bot.username else context.bot.name
+            msg = self.cfg.get("whitelist_msg").replace("{{name}}", name)
+            await update.message.reply_text(msg, disable_web_page_preview=True)
 
         return _whitelist
