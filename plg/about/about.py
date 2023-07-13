@@ -6,8 +6,8 @@ from telegram.ext import CallbackContext, CommandHandler
 class About(TGBFPlugin):
 
     async def init(self):
-        await self.add_handler(CommandHandler("about", self.about_callback))
+        await self.add_handler(CommandHandler(self.handle, self.init_callback))
 
     @TGBFPlugin.send_typing
-    async def about_callback(self, update: Update, context: CallbackContext):
+    async def init_callback(self, update: Update, context: CallbackContext):
         await update.message.reply_text(text="WORKS")
