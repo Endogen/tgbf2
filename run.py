@@ -209,7 +209,7 @@ class TelegramBot:
         tb_string = "".join(tb_list)
 
         # Build the message with some markup and additional information about what happened.
-        # You might need to add some logic to deal with messages longer than the 4096 character limit.
+        # You might need to add some logic to deal with messages longer than the 4096-character limit.
         update_str = update.to_dict() if isinstance(update, Update) else str(update)
         message = (
             f"An exception was raised while handling an update\n"
@@ -242,5 +242,5 @@ if __name__ == "__main__":
         rotation="5 MB"
     )
 
-    nest_asyncio.apply()
+    nest_asyncio.apply()  # TODO: How to get rid of that?
     asyncio.run(TelegramBot().run())
