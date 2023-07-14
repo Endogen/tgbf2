@@ -39,11 +39,6 @@ class TGBFPlugin:
         # All web endpoints for this plugin
         # self._endpoints: Dict[str, EndpointAction] = dict()
 
-        # # Create global db table for wallets
-        # if not self.global_table_exists("wallets"):
-        #     sql = self.get_global_resource("create_wallets.sql")
-        #     self.execute_global_sql(sql)
-
     async def __aenter__(self):
         """ Executes init() method. Make sure to return 'self' if you override it """
         await self.init()
