@@ -419,9 +419,9 @@ class TGBFPlugin:
         """ Return TRUE if the given plugin is enabled or FALSE otherwise """
         return plugin_name in self.plugins
 
-    async def is_private(self, message: Message):
+    def is_private(self, message: Message):
         """ Check if message was sent in a private chat or not """
-        return await self.tgb.app.updater.bot.get_chat(message.chat_id).type == Chat.PRIVATE
+        return message.chat.type == Chat.PRIVATE
 
     def remove_msg_after(self, message: Message, after_secs):
         """ Remove a Telegram message after a given time """
