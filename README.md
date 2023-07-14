@@ -1,0 +1,3 @@
+- Difference between the two configs (.env and ConfigManager)
+- Show how to create a plugin
+- Explain core concepts 
