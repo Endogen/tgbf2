@@ -8,7 +8,7 @@ from telegram.ext import CallbackContext, CommandHandler
 class Admin(TGBFPlugin):
 
     async def init(self):
-        await self.add_handler(CommandHandler(self.handle, self.init_callback))
+        await self.add_handler(CommandHandler(self.handle, self.init_callback, block=False))
 
     @TGBFPlugin.send_typing
     async def init_callback(self, update: Update, context: CallbackContext):

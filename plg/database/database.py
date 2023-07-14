@@ -12,7 +12,7 @@ class Database(TGBFPlugin):
             sql = await self.get_resource("create_test.sql")
             await self.exec_sql(sql)
 
-        await self.add_handler(CommandHandler(self.handle, self.init_callback))
+        await self.add_handler(CommandHandler(self.handle, self.init_callback, block=False))
 
     @TGBFPlugin.send_typing
     async def init_callback(self, update: Update, context: CallbackContext):
