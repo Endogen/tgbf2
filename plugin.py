@@ -510,12 +510,12 @@ class TGBFPlugin:
         async def _owner(self, update: Update, context: CallbackContext, **kwargs):
             user_id = update.effective_user.id
 
-            plg_admin_lst = self.cfg.get("admins")
-            plg_admin_lst = plg_admin_lst if plg_admin_lst else []
+            plg_admins = self.cfg.get("admins")
+            plg_admins = plg_admins if isinstance(plg_admins, list) else []
 
             global_admin = self.cfg_global.get("admin_tg_id")
 
-            if user_id in plg_admin_lst or user_id == global_admin:
+            if user_id in plg_admins or user_id == global_admin:
                 if asyncio.iscoroutinefunction(func):
                     return await func(self, update, context, **kwargs)
                 else:
@@ -531,15 +531,13 @@ class TGBFPlugin:
         @wraps(func)
         async def _dependency(self, update: Update, context: CallbackContext, **kwargs):
             dependencies = self.cfg.get("dependency")
+            dependencies = dependencies if isinstance(dependencies, list) else []
 
-            if dependencies and isinstance(dependencies, list):
-                for dependency in dependencies:
-                    if dependency.lower() not in self.plugins:
-                        msg = f"{emo.ERROR} Plugin '{self.name}' is missing dependency '{dependency}'"
-                        await update.message.reply_text(msg)
-                        return
-            else:
-                logger.error(f"Dependencies for plugin '{self.name}' not defined as list")
+            for dependency in dependencies:
+                if dependency.lower() not in self.plugins:
+                    msg = f"{emo.ERROR} Plugin '{self.name}' is missing dependency '{dependency}'"
+                    await update.message.reply_text(msg)
+                    return
 
             if asyncio.iscoroutinefunction(func):
                 return await func(self, update, context, **kwargs)
