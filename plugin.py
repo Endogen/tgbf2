@@ -510,10 +510,12 @@ class TGBFPlugin:
         async def _owner(self, update: Update, context: CallbackContext, **kwargs):
             user_id = update.effective_user.id
 
-            admins_plugin = self.cfg.get("admins")
-            admins_global = self.cfg_global.get("admin_tg_id")
+            plg_admin_lst = self.cfg.get("admins")
+            plg_admin_lst = plg_admin_lst if plg_admin_lst else []
 
-            if user_id in admins_plugin or user_id == admins_global:
+            global_admin = self.cfg_global.get("admin_tg_id")
+
+            if user_id in plg_admin_lst or user_id == global_admin:
                 if asyncio.iscoroutinefunction(func):
                     return await func(self, update, context, **kwargs)
                 else:
