@@ -1,20 +1,16 @@
 import os
 import sqlite3
 import inspect
-
 import asyncio
-from functools import wraps
-
-from telegram.constants import ChatAction
-from telegram.ext._utils.types import CCT
-
 import constants as c
 import emoji as emo
 import utils as utl
 
 from pathlib import Path
 from loguru import logger
+from functools import wraps
 from typing import List, Tuple, Dict
+from telegram.constants import ChatAction
 from telegram import Chat, Update, Message
 from telegram.ext import CallbackContext, CallbackQueryHandler, ConversationHandler, BaseHandler, Job
 from datetime import datetime, timedelta
@@ -199,7 +195,7 @@ class TGBFPlugin:
             logger.error(e)
             await self.notify(e)
 
-    async def get_jobs(self, name=None) -> Tuple['Job[CCT]', ...]:
+    async def get_jobs(self, name=None) -> Tuple[Job, ...]:
         """ Return jobs with given name or all jobs if not name given """
 
         if name:
@@ -503,7 +499,7 @@ class TGBFPlugin:
     @classmethod
     def owner(cls, func):
         """
-        Decorator that executes the method only if the user is an bot admin.
+        Decorator that executes the method only if the user is a bot admin.
 
         The user ID that triggered the command has to be in the ["admin"]["ids"]
         list of the global config file 'global.cfg' or in the ["admins"] list
