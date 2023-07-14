@@ -1,3 +1,5 @@
 - Difference between the two configs (.env and ConfigManager)
 - Show how to create a plugin
-- Explain core concepts 
+- Explain core concepts
+- Describe all possible keys in cfg files
+  - handle, dependency [], admins [], description, category, blacklist, blacklist_msg, whitelist, whitelist_msg
