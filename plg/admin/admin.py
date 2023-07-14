@@ -10,6 +10,7 @@ class Admin(TGBFPlugin):
     async def init(self):
         await self.add_handler(CommandHandler(self.handle, self.init_callback, block=False))
 
+    @TGBFPlugin.owner
     @TGBFPlugin.send_typing
     async def init_callback(self, update: Update, context: CallbackContext):
         if len(context.args) < 2:
@@ -22,8 +23,10 @@ class Admin(TGBFPlugin):
         if sub_command == 'disable':
             await self.tgb.disable_plugin(plg_name)
             await update.message.reply_text(f'{emo.DONE} Disabled plugin {plg_name}')
+
         elif sub_command == 'enable':
             await self.tgb.enable_plugin(plg_name)
             await update.message.reply_text(f'{emo.DONE} Enabled plugin {plg_name}')
+
         else:
             await update.message.reply_text(f'{emo.WARNING} Unknown argument(s)')
