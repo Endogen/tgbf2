@@ -117,19 +117,7 @@ class TGBFPlugin:
         """ Will add bot handlers to this plugins list of handlers
          and also add them to the bot dispatcher """
 
-        # TODO: Is this workaround still needed?
-        if not group:
-            """
-            Make sure that all CallbackQueryHandlers are in their own
-            group so that ALL CallbackQueryHandler callbacks get triggered.
-            But that means that we need to make sure that only the right
-            one gets executed! This is a workaround due to not knowing
-            how to call only the 'right' callback function.
-            """
-            if isinstance(handler, (CallbackQueryHandler, ConversationHandler)):
-                group = utl.md5(self.name, to_int=True)
-            else:
-                group = 0
+        group = group if group else utl.md5(self.name, to_int=True)
 
         self.tgb.app.add_handler(handler, group)
         self.handlers.append(handler)
