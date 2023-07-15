@@ -1,6 +1,7 @@
-import os  # TODO: Modul ersetzen
 import json
 import logging
+
+from pathlib import Path
 
 
 class ConfigManager:
@@ -29,7 +30,7 @@ class ConfigManager:
         """ Read the JSON content of a given configuration file """
 
         try:
-            if os.path.isfile(self._cfg_file):
+            if Path(self._cfg_file).is_file():
                 with open(self._cfg_file) as config_file:
                     self._cfg = json.load(config_file)
             else:
@@ -42,8 +43,8 @@ class ConfigManager:
         """ Write the JSON dictionary into the given configuration file """
 
         try:
-            if not os.path.exists(os.path.dirname(self._cfg_file)):
-                os.makedirs(os.path.dirname(self._cfg_file))
+            Path(self._cfg_file).parent.mkdir(parents=True, exist_ok=True)
+
             with open(self._cfg_file, "w") as config_file:
                 json.dump(self._cfg, config_file, indent=4)
         except Exception as e:
