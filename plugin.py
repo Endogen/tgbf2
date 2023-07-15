@@ -36,9 +36,6 @@ class TGBFPlugin:
         # Access to plugin config
         self._cfg = ConfigManager(self.get_cfg_path() / self.get_cfg_name())
 
-        # All web endpoints for this plugin
-        # self._endpoints: Dict[str, EndpointAction] = dict()
-
     async def __aenter__(self):
         """ Executes init() method. Make sure to return 'self' if you override it """
         await self.init()
@@ -106,12 +103,6 @@ class TGBFPlugin:
     def handlers(self) -> List[BaseHandler]:
         """ Return a list of bot handlers for this plugin """
         return self._handlers
-
-    # @property
-    # def endpoints(self) -> Dict[str, EndpointAction]:
-    #     """ Return a dictionary with key = endpoint name and
-    #     value = EndpointAction for this plugin """
-    #     return self._endpoints
 
     async def add_handler(self, handler: BaseHandler, group: int = None):
         """ Will add bot handlers to this plugins list of handlers

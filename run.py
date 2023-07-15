@@ -110,13 +110,6 @@ class TelegramBot:
                 logger.error(msg)
                 return False, str(e)
 
-            # TODO: Currently not possible. Switch to FastAPI?
-            # # Remove endpoints
-            # if plugin.endpoints:
-            #     msg = f"Not possible to disable a plugin that has an endpoint"
-            #     logger.warning(msg)
-            #     return False, msg
-
             # Remove plugin handlers
             for handler in plugin.handlers:
                 self.app.remove_handler(handler)
