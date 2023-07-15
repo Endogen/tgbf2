@@ -166,7 +166,7 @@ class TGBFPlugin:
         await self.notify(f'No usage info for plugin <b>{self.name}</b>')
         return f'{emo.ERROR} Could not retrieve usage info'
 
-    async def get_global_resource(self, filename):
+    async def get_resource_global(self, filename):
         """ Return the content of the given file
         from the global resource directory """
 
@@ -369,7 +369,7 @@ class TGBFPlugin:
         cur = con.cursor()
         exists = False
 
-        statement = await self.get_global_resource("table_exists.sql")
+        statement = await self.get_resource_global("table_exists.sql")
 
         try:
             if cur.execute(statement, [table_name]).fetchone():
