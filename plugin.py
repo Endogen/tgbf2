@@ -12,7 +12,7 @@ from functools import wraps
 from typing import List, Tuple, Dict
 from telegram.constants import ChatAction
 from telegram import Chat, Update, Message
-from telegram.ext import CallbackContext, CallbackQueryHandler, ConversationHandler, BaseHandler, Job
+from telegram.ext import CallbackContext, BaseHandler, Job
 from datetime import datetime, timedelta
 
 from config import ConfigManager
