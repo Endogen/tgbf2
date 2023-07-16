@@ -1,0 +1,7 @@
+✨ <b>TGBF2 - Telegram Bot Framework 2</b> ✨
+
+TGBF2 is a framework to easily build solid Telegram bots. All the boilerplate is already done and you can start creating content faster.
+
+It was created by <a href="https://t.me/endogen">Endogen</a> and you can check out the source code in the <a href="https://github.com/Endogen/tgbf2">GitHub repository</a>.
+
+Cheers 🍻👋
