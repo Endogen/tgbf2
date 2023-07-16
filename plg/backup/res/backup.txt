@@ -1,0 +1,7 @@
+<b>How to use the {{handle}} plugin</b>
+
+◾️ Backup the whole bot
+<code>/{{handle}}</code>
+
+◾️ Backup a specific plugin
+<code>/{{handle}} [plugin name]</code>
