@@ -397,7 +397,7 @@ class TGBFPlugin:
         """ Check if message was sent in a private chat or not """
         return message.chat.type == Chat.PRIVATE
 
-    def remove_msg_after(self, message: Message, after_secs):
+    def remove_msg_after(self, *messages: Message, after_secs):
         """ Remove a Telegram message after a given time """
 
         async def remove_msg_job(context: CallbackContext):
@@ -410,10 +410,11 @@ class TGBFPlugin:
             except Exception as e:
                 logger.error(f"Not possible to remove message: {e}")
 
-        self.run_once(
-            remove_msg_job,
-            datetime.utcnow() + timedelta(seconds=after_secs),
-            data=f"{message.chat_id}_{message.message_id}")
+        for message in messages:
+            self.run_once(
+                remove_msg_job,
+                datetime.utcnow() + timedelta(seconds=after_secs),
+                data=f"{message.chat_id}_{message.message_id}")
 
     async def notify(self, some_input):
         """ All admins in global config will get a message with the given text.
