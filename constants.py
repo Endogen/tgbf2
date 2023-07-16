@@ -10,6 +10,7 @@ DIR_CFG = Path('cfg')
 DIR_LOG = Path('log')
 DIR_DAT = Path('dat')
 DIR_TMP = Path('tmp')
+DIR_BCK = Path('bck')
 
 # Extensions
 CFG_EXT = '.cfg'
