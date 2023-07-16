@@ -11,7 +11,8 @@ class About(TGBFPlugin):
     @TGBFPlugin.send_typing
     async def init_callback(self, update: Update, context: CallbackContext):
         msg = await update.message.reply_text(
-            text="Created by ⒺⓃⒹⓄⒼⒺⓃ. Message will be removed in 5 seconds"
+            await self.get_plg_info(),
+            disable_web_page_preview=True
         )
 
-        self.remove_msg_after(msg, 5)
+        self.remove_msg_after(update.message, msg, after_secs=20)
