@@ -125,8 +125,8 @@ class TGBFPlugin:
     #
     #     logger.info(f"Plugin '{self.name}': Endpoint '{name}' added")
 
-    async def get_usage(self, replace: dict = None):
-        """ Return how to use a command. Default resource '<plugin>.md'
+    async def get_plg_info(self, replace: dict = None):
+        """ Return info about the command. Default resource '<plugin>.md'
          will be loaded from the resource folder and if you provide a
          dict with '<placeholder>,<value>' entries then placeholders in
          the resource will be replaced with the corresponding <value> """
