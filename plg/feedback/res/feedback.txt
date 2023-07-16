@@ -1,0 +1,4 @@
+<b>How to use the {{handle}} plugin</b>
+
+◾️ Send feedback to the bot creator
+<code>/{{handle}} [Your feedback]</code>
