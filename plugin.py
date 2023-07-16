@@ -448,7 +448,7 @@ class TGBFPlugin:
 
             if update.message:
                 name = context.bot.username if context.bot.username else context.bot.name
-                msg = f"{emo.ERROR} DM the bot @{name} to use this command"
+                msg = f"{emo.ERROR} Use this command in a chat with the bot @{name}"
                 await update.message.reply_text(msg)
 
         return _private
