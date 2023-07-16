@@ -17,7 +17,7 @@ class Database(TGBFPlugin):
     @TGBFPlugin.send_typing
     async def init_callback(self, update: Update, context: CallbackContext):
         if len(context.args) < 2:
-            await update.message.reply_text(await self.get_usage())
+            await update.message.reply_text(await self.get_plg_info())
             return
 
         sub_command = context.args[0].lower()
