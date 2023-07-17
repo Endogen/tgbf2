@@ -5,3 +5,4 @@
   - handle, dependency [], admins [], description, category, blacklist, blacklist_msg, whitelist, whitelist_msg
 - CFG files are JSON files
 - Remove DB plugin and instead create how-to where the details are mentioned
+- If plugin 'debug' is not being used then no need to install 'psutil' module
