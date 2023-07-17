@@ -26,7 +26,8 @@ class Debug(TGBFPlugin):
         vi = sys.version_info
         v = f"{vi.major}.{vi.minor}.{vi.micro}"
 
-        msg = f"PID: {os.getpid()}\n" \
+        msg = f"<code>" \
+              f"PID: {os.getpid()}\n" \
               f"Python: {v}\n" \
               f"Open files: {len(psutil.Process().open_files())}\n" \
               f"IP: {utl.get_external_ip()}\n" \
@@ -47,7 +48,8 @@ class Debug(TGBFPlugin):
               f"Total RAM: {round(psutil.virtual_memory().total/1000000000, 2)} GB\n" \
               f"Available RAM: {round(psutil.virtual_memory().available/1000000000, 2)} GB\n" \
               f"Used RAM: {round(psutil.virtual_memory().used/1000000000, 2)} GB\n" \
-              f"RAM Usage: {psutil.virtual_memory().percent}%"
+              f"RAM Usage: {psutil.virtual_memory().percent}%" \
+              f"</code>"
 
         if self.is_private(update.message):
             await update.message.reply_text(msg)
