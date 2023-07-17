@@ -26,37 +26,35 @@ class Debug(TGBFPlugin):
         vi = sys.version_info
         v = f"{vi.major}.{vi.minor}.{vi.micro}"
 
-        msg = f"<code>" \
-              f"PID: {os.getpid()}\n" \
-              f"Python: {v}\n" \
-              f"Open files: {len(psutil.Process().open_files())}\n" \
-              f"IP: {utl.get_external_ip()}\n" \
-              f"Network: {platform.node()}\n" \
-              f"Machine: {platform.machine()}\n" \
-              f"Processor: {platform.processor()}\n" \
-              f"Platform: {platform.platform()}\n" \
-              f"OS: {platform.system()}\n" \
-              f"OS Release: {platform.release()}\n" \
-              f"OS Version: {platform.version()}\n" \
-              f"CPU Physical Cores: {psutil.cpu_count(logical=False)}\n" \
-              f"CPU Logical Cores: {psutil.cpu_count(logical=True)}\n" \
-              f"Current CPU Frequency: {psutil.cpu_freq().current}\n" \
-              f"Min CPU Frequency: {psutil.cpu_freq().min}\n" \
-              f"Max CPU Frequency: {psutil.cpu_freq().max}\n" \
-              f"CPU Utilization: {psutil.cpu_percent(interval=1)}\n" \
-              f"Per-CPU Utilization: {psutil.cpu_percent(interval=1, percpu=True)}\n" \
-              f"Total RAM: {round(psutil.virtual_memory().total/1000000000, 2)} GB\n" \
-              f"Available RAM: {round(psutil.virtual_memory().available/1000000000, 2)} GB\n" \
-              f"Used RAM: {round(psutil.virtual_memory().used/1000000000, 2)} GB\n" \
-              f"RAM Usage: {psutil.virtual_memory().percent}%" \
-              f"</code>"
+        msg = f"PID: <code>{os.getpid()}</code>\n" \
+              f"Python: <code>{v}</code>\n" \
+              f"Open files: <code>{len(psutil.Process().open_files())}</code>\n" \
+              f"IP: <code>{utl.get_external_ip()}</code>\n" \
+              f"Network: <code>{platform.node()}</code>\n" \
+              f"Machine: <code>{platform.machine()}</code>\n" \
+              f"Processor: <code>{platform.processor()}</code>\n" \
+              f"Platform: <code>{platform.platform()}</code>\n" \
+              f"OS: <code>{platform.system()}</code>\n" \
+              f"OS Release: <code>{platform.release()}</code>\n" \
+              f"OS Version: <code>{platform.version()}</code>\n" \
+              f"CPU Physical Cores: <code>{psutil.cpu_count(logical=False)}</code>\n" \
+              f"CPU Logical Cores: <code>{psutil.cpu_count(logical=True)}</code>\n" \
+              f"Current CPU Frequency: <code>{psutil.cpu_freq().current}</code>\n" \
+              f"Min CPU Frequency: <code>{psutil.cpu_freq().min}</code>\n" \
+              f"Max CPU Frequency: <code>{psutil.cpu_freq().max}</code>\n" \
+              f"CPU Utilization: <code>{psutil.cpu_percent(interval=1)}</code>\n" \
+              f"Per-CPU Utilization: <code>{psutil.cpu_percent(interval=1, percpu=True)}</code>\n" \
+              f"Total RAM: <code>{round(psutil.virtual_memory().total/1000000000, 2)} GB</code>\n" \
+              f"Available RAM: <code>{round(psutil.virtual_memory().available/1000000000, 2)} GB</code>\n" \
+              f"Used RAM: <code>{round(psutil.virtual_memory().used/1000000000, 2)} GB</code>\n" \
+              f"RAM Usage: <code>{psutil.virtual_memory().percent}%</code>"
 
         if self.is_private(update.message):
             await update.message.reply_text(msg)
         else:
             try:
-                await self.tgb.app.bot.updater.bot.send_message(
+                await self.tgb.app.bot.send_message(
                     update.effective_user.id,
-                    f"{msg}\n\n{update.effective_chat}")
+                    f"{msg}\n\nChat details: <code>{update.effective_chat.to_json()}</code>")
             except Exception as e:
                 logging.error(f"Could not send debug info: {e}")
