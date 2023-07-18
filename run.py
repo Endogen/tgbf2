@@ -58,6 +58,7 @@ class TelegramBot:
 
     async def load_plugins(self):
         """ Load all plugins from the 'plugins' folder """
+
         try:
             for _, folders, _ in os.walk(c.DIR_PLG):
                 for folder in folders:
@@ -193,6 +194,7 @@ class TelegramBot:
 
     async def _error_handler(self, update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Log the error and send a telegram message to notify the developer."""
+
         # Log the error before we do anything else, so we can see it even if something breaks.
         logger.error(f"Exception while handling an update: {context.error}")
 
