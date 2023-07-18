@@ -115,16 +115,6 @@ class TGBFPlugin:
 
         logger.info(f"Plugin '{self.name}': {type(handler).__name__} added")
 
-    # def add_endpoint(self, name, endpoint: EndpointAction):
-    #     """ Will add web endpoints (Flask) to this plugins list of
-    #      endpoints and also add them to the Flask app """
-    #
-    #     name = name if name.startswith("/") else "/" + name
-    #     self.bot.web.app.add_url_rule(name, name, endpoint)
-    #     self.endpoints[name] = endpoint
-    #
-    #     logger.info(f"Plugin '{self.name}': Endpoint '{name}' added")
-
     async def get_plg_info(self, replace: dict = None):
         """ Return info about the command. Default resource '<plugin>.md'
          will be loaded from the resource folder and if you provide a
