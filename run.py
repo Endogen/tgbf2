@@ -17,6 +17,7 @@ from zipfile import ZipFile
 from telegram import Chat, Update
 from telegram.constants import ParseMode
 from telegram.ext import Application, Defaults, MessageHandler, ContextTypes, filters, CallbackContext
+from argparse import ArgumentParser
 from config import ConfigManager
 
 
@@ -24,13 +25,17 @@ class TelegramBot:
 
     def __init__(self):
         self.app = None
+        self.cfg = None
         self.plugins = dict()
-        self.cfg = ConfigManager(c.DIR_CFG / c.FILE_CFG)
 
-    async def run(self):
+    async def run(self, config: ConfigManager, token: str):
+        self.cfg = config
+
+        # TODO: How to check if token is valid?
+
         self.app = (
             Application.builder()
-            .token(os.getenv('TG_TOKEN'))
+            .token(token)
             .defaults(Defaults(parse_mode=ParseMode.HTML))
             .build()
         )
@@ -223,8 +228,61 @@ class TelegramBot:
         )
 
 
+def _parse_args():
+    """ Parse command line arguments """
+
+    parser = ArgumentParser(description=os.getenv('APP'))
+
+    # Save logfile
+    parser.add_argument(
+        "-no_log_file",
+        dest="savelog",
+        action="store_false",
+        help="don't log into file",
+        required=False,
+        default=True)
+
+    # Log level
+    parser.add_argument(
+        "-log",
+        dest="loglevel",
+        type=int,
+        choices=[0, 10, 20, 30, 40, 50],
+        help="disabled, debug, info, warning, error, critical",
+        default=30,
+        required=False)
+
+    # Module log level
+    parser.add_argument(
+        "-module_log",
+        dest="mloglevel",
+        help="set log level for a module",
+        default=None,
+        required=False)
+
+    # Bot token
+    parser.add_argument(
+        "-tg_tkn",
+        dest="token",
+        help="set Telegram bot token",
+        required=False,
+        default=None)
+
+    # Bot token via input
+    parser.add_argument(
+        "-input-tg_tkn",
+        dest="input_token",
+        action="store_true",
+        help="set Telegram bot token",
+        required=False,
+        default=False)
+
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
     load_dotenv()
+    args = _parse_args()
 
     logger.remove()
 
@@ -240,4 +298,13 @@ if __name__ == "__main__":
     )
 
     nest_asyncio.apply()  # TODO: How to get rid of that?
-    asyncio.run(TelegramBot().run())
+
+    cfg = ConfigManager(c.DIR_CFG / c.FILE_CFG)
+    tkn = os.getenv('TG_TOKEN')
+
+    if args.token:
+        tkn = args.token
+    if args.input_token:
+        tkn = input("Enter Telegram Bot Token: ")
+
+    asyncio.run(TelegramBot().run(cfg, tkn))
