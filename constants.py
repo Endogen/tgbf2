@@ -1,7 +1,5 @@
 from pathlib import Path
 
-DESCRIPTION = "Python Telegram Bot Framework 2"
-
 # Folders
 DIR_TEM = Path('templates')
 DIR_PLG = Path('plg')
