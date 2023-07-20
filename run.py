@@ -11,13 +11,13 @@ import emoji as emo
 import utils as utl
 import constants as c
 
+from pathlib import Path
 from loguru import logger
 from dotenv import load_dotenv
 from zipfile import ZipFile
 from telegram import Chat, Update
 from telegram.constants import ParseMode
 from telegram.ext import Application, Defaults, MessageHandler, ContextTypes, filters, CallbackContext
-from argparse import ArgumentParser
 from config import ConfigManager
 
 
@@ -35,8 +35,8 @@ class TelegramBot:
 
         self.app = (
             Application.builder()
-            .token(token)
             .defaults(Defaults(parse_mode=ParseMode.HTML))
+            .token(token)
             .build()
         )
 
@@ -128,6 +128,7 @@ class TelegramBot:
             logger.info(msg)
             return True, msg
 
+    # TODO: Test it
     async def _update_handler(self, update: Update, context: CallbackContext) -> None:
         """
         Update a plugin by uploading a file to the bot.
@@ -176,16 +177,17 @@ class TelegramBot:
             file = await update.message.effective_attachment.get_file()
 
             if zipped:
-                os.makedirs(c.DIR_TMP, exist_ok=True)
+                Path.mkdir(c.DIR_TMP, parents=True, exist_ok=True)
                 zip_path = c.DIR_TMP / name
 
                 await file.download_to_drive(zip_path)
 
                 with ZipFile(zip_path, 'r') as zip_file:
-                    plugin_path = os.path.join(c.DIR_PLG, plugin_name)
-                    zip_file.extractall(plugin_path)
+                    the_path = Path(c.DIR_PLG / plugin_name)
+                    zip_file.extractall(the_path)
             else:
-                await file.download_to_drive(c.DIR_PLG / plugin_name / name)
+                the_path = Path(c.DIR_PLG / plugin_name / name)
+                await file.download_to_drive(the_path)
 
             await self.disable_plugin(plugin_name)
             await self.enable_plugin(plugin_name)
@@ -228,83 +230,30 @@ class TelegramBot:
         )
 
 
-def _parse_args():
-    """ Parse command line arguments """
-
-    parser = ArgumentParser(description=os.getenv('APP'))
-
-    # Save logfile
-    parser.add_argument(
-        "-no_log_file",
-        dest="savelog",
-        action="store_false",
-        help="don't log into file",
-        required=False,
-        default=True)
-
-    # Log level
-    parser.add_argument(
-        "-log",
-        dest="loglevel",
-        type=int,
-        choices=[0, 10, 20, 30, 40, 50],
-        help="disabled, debug, info, warning, error, critical",
-        default=30,
-        required=False)
-
-    # Module log level
-    parser.add_argument(
-        "-module_log",
-        dest="mloglevel",
-        help="set log level for a module",
-        default=None,
-        required=False)
-
-    # Bot token
-    parser.add_argument(
-        "-tg_tkn",
-        dest="token",
-        help="set Telegram bot token",
-        required=False,
-        default=None)
-
-    # Bot token via input
-    parser.add_argument(
-        "-input-tg_tkn",
-        dest="input_token",
-        action="store_true",
-        help="set Telegram bot token",
-        required=False,
-        default=False)
-
-    return parser.parse_args()
-
-
 if __name__ == "__main__":
+    # Load parameters from .env file
     load_dotenv()
-    args = _parse_args()
+
+    log_level = os.getenv('LOG_LEVEL') if os.getenv('LOG_LEVEL') else 'INFO'
+    log_into_file = os.getenv('LOG_INTO_FILE') if os.getenv('LOG_INTO_FILE') else True
 
     logger.remove()
 
     logger.add(
         sys.stderr,
-        level=os.getenv('LOG_LEVEL'))
+        level=log_level)
 
-    logger.add(
-        os.path.join("log", "{time}.log"),
-        format="{time} {name} {message}",
-        level=os.getenv('LOG_LEVEL'),
-        rotation="5 MB"
-    )
+    if log_into_file:
+        logger.add(
+            Path(Path('log') / Path('{time}.log')),
+            format="{time} {name} {message}",
+            level=log_level,
+            rotation="5 MB"
+        )
 
     nest_asyncio.apply()  # TODO: How to get rid of that?
 
-    cfg = ConfigManager(c.DIR_CFG / c.FILE_CFG)
-    tkn = os.getenv('TG_TOKEN')
-
-    if args.token:
-        tkn = args.token
-    if args.input_token:
-        tkn = input("Enter Telegram Bot Token: ")
-
-    asyncio.run(TelegramBot().run(cfg, tkn))
+    asyncio.run(TelegramBot().run(
+        ConfigManager(c.DIR_CFG / c.FILE_CFG),
+        os.getenv('TG_TOKEN'))
+    )
