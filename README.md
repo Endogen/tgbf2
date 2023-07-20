@@ -10,5 +10,4 @@
 # TODO
 - Dynamic routes https://stackoverflow.com/questions/70783994/reload-routes-in-fastapi-during-runtime
 - Singleton needed? No! Better make sure multiple instances can be run with different names
-- parse_args on startup
-- Describe Start-Arguments
+- Describe possible parameters in .env file
