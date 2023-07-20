@@ -16,6 +16,7 @@ from loguru import logger
 from dotenv import load_dotenv
 from zipfile import ZipFile
 from telegram import Chat, Update
+from telegram.error import InvalidToken
 from telegram.constants import ParseMode
 from telegram.ext import Application, Defaults, MessageHandler, ContextTypes, filters, CallbackContext
 from config import ConfigManager
@@ -30,8 +31,6 @@ class TelegramBot:
 
     async def run(self, config: ConfigManager, token: str):
         self.cfg = config
-
-        # TODO: How to check if token is valid?
 
         self.app = (
             Application.builder()
@@ -52,11 +51,15 @@ class TelegramBot:
         logger.info("Setting up error handling...")
         self.app.add_error_handler(self._error_handler)
 
-        # Notify admin about bot start
-        await self.app.updater.bot.send_message(
-            chat_id=self.cfg.get('admin_tg_id'),
-            text=f'{emo.ROBOT} Bot is up and running!'
-        )
+        try:
+            # Notify admin about bot start
+            await self.app.updater.bot.send_message(
+                chat_id=self.cfg.get('admin_tg_id'),
+                text=f'{emo.ROBOT} Bot is up and running!'
+            )
+        except InvalidToken:
+            logger.error('Invalid Telegram bot token')
+            return
 
         # Start polling for updates
         self.app.run_polling(drop_pending_updates=True)
