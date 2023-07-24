@@ -32,4 +32,7 @@ class Help(TGBFPlugin):
 
             msg += "\n"
 
-        await update.message.reply_text(msg, disable_web_page_preview=True)
+        msg = await update.message.reply_text(msg, disable_web_page_preview=True)
+
+        if not self.is_private(update.message):
+            self.remove_msg_after(update.message, msg, after_secs=20)
