@@ -131,7 +131,7 @@ class TelegramBot:
             logger.info(msg)
             return True, msg
 
-    # TODO: Test it
+    # FIXME: Update is not being used - how to replace already loaded plugin?
     async def _update_handler(self, update: Update, context: CallbackContext) -> None:
         """
         Update a plugin by uploading a file to the bot.
@@ -151,7 +151,7 @@ class TelegramBot:
             return
         if not update.message:
             return
-        if update.effective_user.id is not self.cfg.get('admin_tg_id'):
+        if update.effective_user.id != int(self.cfg.get('admin_tg_id')):
             return
         if (await context.bot.get_chat(update.message.chat_id)).type != Chat.PRIVATE:
             return
