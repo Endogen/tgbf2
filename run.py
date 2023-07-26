@@ -44,8 +44,11 @@ class TelegramBot:
 
         # Add handler for file downloads (plugin updates)
         logger.info("Setting up plugin updates...")
-        mh = MessageHandler(filters.ATTACHMENT, self._update_handler)
-        self.app.add_handler(mh)
+        self.app.add_handler(
+            MessageHandler(
+                filters.Document.ZIP | filters.Document.FileExtension('py'),
+                self._update_handler)
+        )
 
         # Handle all Telegram related errors
         logger.info("Setting up error handling...")
@@ -131,7 +134,7 @@ class TelegramBot:
             logger.info(msg)
             return True, msg
 
-    # FIXME: Update is not being used - how to replace already loaded plugin?
+    # FIXME: How to correctly replace already loaded plugin?
     async def _update_handler(self, update: Update, context: CallbackContext) -> None:
         """
         Update a plugin by uploading a file to the bot.
@@ -144,7 +147,7 @@ class TelegramBot:
         replace the plugin implementation with the same name. For example the
         file 'about.py' will replace the same file in the 'about' plugin.
 
-        All of this will only work in a private chat with the bot.
+        Will only work in a private chat and only if user is bot admin.
         """
 
         if not isinstance(update, Update):
@@ -163,18 +166,13 @@ class TelegramBot:
             if name.endswith(".py"):
                 plugin_name = name.replace(".py", "")
             elif name.endswith(".zip"):
-                if len(name) == 18:
-                    msg = f"{emo.ERROR} Only backups of plugins are supported"
-                    await update.message.reply_text(text=msg)
-                    return
                 zipped = True
                 if utl.is_numeric(name[:13]):
                     plugin_name = name[14:].replace(".zip", "")
                 else:
                     plugin_name = name.replace(".zip", "")
             else:
-                msg = f"{emo.ERROR} Wrong file format"
-                await update.message.reply_text(msg)
+                logger.warning(f"{emo.ERROR} Wrong file format for update")
                 return
 
             file = await update.message.effective_attachment.get_file()
