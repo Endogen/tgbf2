@@ -1,4 +1,4 @@
-def is_numeric(string):
+def is_numeric(string) -> bool:
     """ Also accepts '.' in the string. Function 'isnumeric()' doesn't """
     try:
         float(string)
@@ -26,31 +26,27 @@ def format(value,
     """ Format a crypto coin value so that it isn't unnecessarily long """
 
     fiat = False
+
     if symbol and isinstance(symbol, str):
         pass
-
     if value is None:
         return on_none
-
     try:
         if isinstance(value, str):
             value = value.replace(",", "")
         v = float(value)
     except:
         return str(value)
-
     try:
         if isinstance(template, str):
             template = template.replace(",", "")
         t = float(template)
     except:
         t = v
-
     try:
         decimals = int(decimals)
     except:
         decimals = None
-
     try:
         if float(value) == 0:
             return on_zero
@@ -157,9 +153,11 @@ def from_unix_time(seconds, millis=False):
     return datetime.utcfromtimestamp(seconds / 1000 if millis else seconds)
 
 
-# TODO: Get this the standard way --> Some socket class
+def get_ip():
+    import socket
+    return socket.gethostbyname(socket.gethostname())
+
+
 def get_external_ip():
-    import urllib.request, re
-    site = urllib.request.urlopen("http://checkip.dyndns.org/").read()
-    grab = re.findall(r"[0-9]+(?:\.[0-9]+){3}", site.decode("utf-8"))
-    return grab[0] if grab else None
+    import urllib.request
+    return urllib.request.urlopen('https://api.ipify.org/').read().decode("utf-8")
