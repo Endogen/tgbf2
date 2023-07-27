@@ -10,8 +10,6 @@ class ConfigManager:
     _cfg = dict()
     # Config file path
     _cfg_file = None
-    # Ignore reloading config?
-    _ignore = False
 
     def __init__(self, config_file):
         """ This class takes a JSON config file and makes it available
