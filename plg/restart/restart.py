@@ -1,6 +1,5 @@
 import os
 import sys
-import logging
 import asyncio
 import emoji as emo
 
@@ -28,7 +27,7 @@ class Restart(TGBFPlugin):
                 text=f"{emo.DONE} Restarting bot..."
             )
         except Exception as e:
-            logging.error(str(e))
+            self.log.error(str(e))
         finally:
             self.cfg.remove("chat_id")
             self.cfg.remove("message_id")

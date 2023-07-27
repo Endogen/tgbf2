@@ -1,4 +1,3 @@
-import logging
 import asyncio
 import threading
 import emoji as emo
@@ -19,7 +18,7 @@ class Shutdown(TGBFPlugin):
     async def init_callback(self, update: Update, context: CallbackContext):
         msg = f"{emo.GOODBYE} Shutting down..."
         await update.message.reply_text(msg)
-        logging.info(msg)
+        self.log.info(msg)
 
         threading.Thread(target=asyncio.run, args=(self.shutdown_callback(),)).start()
 

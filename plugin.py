@@ -2,6 +2,7 @@ import os
 import sqlite3
 import inspect
 import asyncio
+
 import constants as c
 import emoji as emo
 import utils as utl
@@ -9,12 +10,12 @@ import utils as utl
 from pathlib import Path
 from loguru import logger
 from functools import wraps
+from loguru._logger import Logger
 from typing import List, Tuple, Dict
 from telegram.constants import ChatAction
 from telegram import Chat, Update, Message
 from telegram.ext import CallbackContext, BaseHandler, Job
 from datetime import datetime, timedelta
-
 from config import ConfigManager
 from run import TelegramBot
 
@@ -23,6 +24,9 @@ class TGBFPlugin:
 
     def __init__(self, tgb: TelegramBot):
         self._tgb = tgb
+        
+        # Set default logger
+        self._log = logger
 
         # Set class name as name of this plugin
         self._name = type(self).__name__.lower()
@@ -57,6 +61,10 @@ class TGBFPlugin:
     @property
     def tgb(self) -> TelegramBot:
         return self._tgb
+
+    @property
+    def log(self) -> Logger:
+        return self._log
 
     @property
     def name(self) -> str:
@@ -113,7 +121,7 @@ class TGBFPlugin:
         self.tgb.app.add_handler(handler, group)
         self.handlers.append(handler)
 
-        logger.info(f"Plugin '{self.name}': {type(handler).__name__} added")
+        self.log.info(f"Plugin '{self.name}': {type(handler).__name__} added")
 
     async def get_plg_info(self, replace: dict = None):
         """ Return info about the command. Default resource '<plugin>.txt'
@@ -156,7 +164,7 @@ class TGBFPlugin:
             with open(path, "r", encoding="utf8") as f:
                 return f.read()
         except Exception as e:
-            logger.error(e)
+            self.log.error(e)
             await self.notify(e)
 
     async def get_jobs(self, name=None) -> Tuple[Job, ...]:
@@ -279,7 +287,7 @@ class TGBFPlugin:
         except Exception as e:
             res["data"] = str(e)
             res["success"] = False
-            logger.error(e)
+            self.log.error(e)
             await self.notify(e)
 
         with sqlite3.connect(db_path, timeout=5) as con:
@@ -294,7 +302,7 @@ class TGBFPlugin:
             except Exception as e:
                 res["data"] = str(e)
                 res["success"] = False
-                logger.error(e)
+                self.log.error(e)
                 await self.notify(e)
 
             return res
@@ -344,7 +352,7 @@ class TGBFPlugin:
             if cur.execute(statement, [table_name]).fetchone():
                 exists = True
         except Exception as e:
-            logger.error(e)
+            self.log.error(e)
             await self.notify(e)
 
         con.close()
@@ -398,7 +406,7 @@ class TGBFPlugin:
             try:
                 await context.bot.delete_message(chat_id=chat_id, message_id=msg_id)
             except Exception as e:
-                logger.error(f"Not possible to remove message: {e}")
+                self.log.error(f"Not possible to remove message: {e}")
 
         for message in messages:
             self.run_once(
@@ -419,7 +427,7 @@ class TGBFPlugin:
             await self.tgb.app.updater.bot.send_message(admin, f"{emo.ALERT} {some_input}")
         except Exception as e:
             error = f"Not possible to notify admin id '{admin}'"
-            logger.error(f"{error}: {e}")
+            self.log.error(f"{error}: {e}")
             return False
 
         return True

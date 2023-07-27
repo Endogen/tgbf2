@@ -62,4 +62,5 @@ class Backup(TGBFPlugin):
                 caption=f"{emo.DONE} Backup created",
                 document=open(filepath, 'rb'))
         except Exception as e:
+            self.log.error(e)
             await update.message.reply_text(f"{emo.ERROR} {e}")

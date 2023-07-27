@@ -1,4 +1,3 @@
-import logging
 import emoji as emo
 import constants as con
 
@@ -25,7 +24,7 @@ class Logfile(TGBFPlugin):
                 file = open(log_file, 'rb')
             except Exception as e:
                 file = None
-                logging.error(e)
+                self.log.error(e)
                 await self.notify(e)
         else:
             file = None
