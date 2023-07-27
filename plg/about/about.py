@@ -17,3 +17,6 @@ class About(TGBFPlugin):
 
         if not self.is_private(update.message):
             self.remove_msg_after(update.message, msg, after_secs=20)
+
+        import utils as utl
+        print('External IP:', utl.get_external_ip())

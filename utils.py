@@ -158,6 +158,6 @@ def get_ip():
     return socket.gethostbyname(socket.gethostname())
 
 
-def get_external_ip():
+def get_external_ip(website: str = 'https://api.ipify.org/'):
     import urllib.request
-    return urllib.request.urlopen('https://api.ipify.org/').read().decode("utf-8")
+    return urllib.request.urlopen(website).read().decode("utf-8")
