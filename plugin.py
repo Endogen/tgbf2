@@ -85,7 +85,7 @@ class TGBFPlugin:
         return self.tgb.plugins
 
     @property
-    def jobs(self) -> Tuple:
+    def jobs(self) -> Tuple[Job, ...]:
         """ Return a tuple with all currently active jobs """
         return self.tgb.app.job_queue.jobs()
 
@@ -116,7 +116,7 @@ class TGBFPlugin:
         logger.info(f"Plugin '{self.name}': {type(handler).__name__} added")
 
     async def get_plg_info(self, replace: dict = None):
-        """ Return info about the command. Default resource '<plugin>.md'
+        """ Return info about the command. Default resource '<plugin>.txt'
          will be loaded from the resource folder and if you provide a
          dict with '<placeholder>,<value>' entries then placeholders in
          the resource will be replaced with the corresponding <value> """
@@ -299,7 +299,7 @@ class TGBFPlugin:
 
             return res
 
-    async def table_exists_global(self, table_name, db_name=""):
+    async def table_exists_global(self, table_name, db_name="") -> bool:
         """ Return TRUE if given table exists in global database, otherwise FALSE """
 
         if db_name:
@@ -309,9 +309,9 @@ class TGBFPlugin:
             db_name = c.FILE_DAT
 
         db_path = Path(Path.cwd() / c.DIR_DAT / db_name)
-        return self._db_table_exists(db_path, table_name)
+        return await self._db_table_exists(db_path, table_name)
 
-    async def table_exists(self, table_name, plugin=None, db_name=None):
+    async def table_exists(self, table_name, plugin=None, db_name=None) -> bool:
         """ Return TRUE if given table exists in given plugin, otherwise FALSE """
 
         if db_name:
@@ -328,7 +328,7 @@ class TGBFPlugin:
 
         return await self._db_table_exists(db_path, table_name)
 
-    async def _db_table_exists(self, db_path, table_name):
+    async def _db_table_exists(self, db_path, table_name) -> bool:
         """ Open connection to database and check if given table exists """
 
         if not db_path.is_file():
@@ -360,7 +360,7 @@ class TGBFPlugin:
         plugin = plugin if plugin else self.name
         return Path(c.DIR_PLG / plugin / c.DIR_CFG)
 
-    def get_cfg_name(self, plugin=None):
+    def get_cfg_name(self, plugin=None) -> Path:
         """ Return name of configuration file for given plugin """
         plugin = plugin if plugin else self.name
         return Path(plugin).with_suffix(c.CFG_EXT)
@@ -379,11 +379,11 @@ class TGBFPlugin:
         if plugin_name in self.plugins:
             return self.plugins[plugin_name]
 
-    def is_enabled(self, plugin_name):
+    def is_enabled(self, plugin_name) -> bool:
         """ Return TRUE if the given plugin is enabled or FALSE otherwise """
         return plugin_name in self.plugins
 
-    def is_private(self, message: Message):
+    def is_private(self, message: Message) -> bool:
         """ Check if message was sent in a private chat or not """
         return message.chat.type == Chat.PRIVATE
 
@@ -406,8 +406,8 @@ class TGBFPlugin:
                 datetime.utcnow() + timedelta(seconds=after_secs),
                 data=f"{message.chat_id}_{message.message_id}")
 
-    async def notify(self, some_input):
-        """ All admins in global config will get a message with the given text.
+    async def notify(self, some_input) -> bool:
+        """ Admin in global config will get a message with the given text.
          Primarily used for exceptions but can be used with other inputs too. """
 
         if isinstance(some_input, Exception):
