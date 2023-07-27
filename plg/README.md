@@ -1,0 +1,1 @@
+Add info about how to write a plugin and describe the plugin properties and methods
