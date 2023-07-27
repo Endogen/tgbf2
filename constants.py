@@ -1,7 +1,6 @@
 from pathlib import Path
 
 # Folders
-DIR_TEM = Path('templates')
 DIR_PLG = Path('plg')
 DIR_RES = Path('res')
 DIR_CFG = Path('cfg')
