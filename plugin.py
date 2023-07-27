@@ -24,7 +24,7 @@ class TGBFPlugin:
 
     def __init__(self, tgb: TelegramBot):
         self._tgb = tgb
-        
+
         # Set default logger
         self._log = logger
 
@@ -95,7 +95,7 @@ class TGBFPlugin:
     @property
     def jobs(self) -> Tuple[Job, ...]:
         """ Return a tuple with all currently active jobs """
-        return self.tgb.app.job_queue.jobs()
+        return self.tgb.bot.job_queue.jobs()
 
     @property
     def cfg_global(self) -> ConfigManager:
@@ -118,10 +118,18 @@ class TGBFPlugin:
 
         group = group if group else utl.md5(self.name, to_int=True)
 
-        self.tgb.app.add_handler(handler, group)
+        self.tgb.bot.add_handler(handler, group)
         self.handlers.append(handler)
 
         self.log.info(f"Plugin '{self.name}': {type(handler).__name__} added")
+
+    def add_endpoint(self, name: str, action):
+        self.tgb.endpoints.add_api_route(name, action)
+
+    def remove_endpoint(self, name: str):
+        for route in self.tgb.endpoints.routes:
+            if route.path == name:
+                self.tgb.endpoints.routes.remove(route)
 
     async def get_plg_info(self, replace: dict = None):
         """ Return info about the command. Default resource '<plugin>.txt'
@@ -172,10 +180,10 @@ class TGBFPlugin:
 
         if name:
             # Get all jobs with given name
-            return await self.tgb.app.job_queue.get_jobs_by_name(name)
+            return await self.tgb.bot.job_queue.get_jobs_by_name(name)
         else:
             # Return all jobs
-            return await self.tgb.app.job_queue.jobs()
+            return await self.tgb.bot.job_queue.jobs()
 
     def run_repeating(self, callback, interval, first=0, last=None, data=None, name=None):
         """ Executes the provided callback function indefinitely.
@@ -189,7 +197,7 @@ class TGBFPlugin:
 
         name = name if name else (self.name + "_" + utl.random_id())
 
-        return self.tgb.app.job_queue.run_repeating(
+        return self.tgb.bot.job_queue.run_repeating(
             callback,
             interval,
             first=first,
@@ -208,7 +216,7 @@ class TGBFPlugin:
         name of the job (if no 'name' provided) will be the name
         of the plugin """
 
-        return self.tgb.app.job_queue.run_once(
+        return self.tgb.bot.job_queue.run_once(
             callback,
             when,
             data=data,
@@ -424,7 +432,7 @@ class TGBFPlugin:
         admin = self.cfg_global.get('admin_tg_id')
 
         try:
-            await self.tgb.app.updater.bot.send_message(admin, f"{emo.ALERT} {some_input}")
+            await self.tgb.bot.updater.bot.send_message(admin, f"{emo.ALERT} {some_input}")
         except Exception as e:
             error = f"Not possible to notify admin id '{admin}'"
             self.log.error(f"{error}: {e}")

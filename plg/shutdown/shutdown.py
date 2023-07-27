@@ -23,5 +23,5 @@ class Shutdown(TGBFPlugin):
         threading.Thread(target=asyncio.run, args=(self.shutdown_callback(),)).start()
 
     async def shutdown_callback(self):
-        await self.tgb.app.updater.stop()
-        self.tgb.app.updater.is_idle = False
+        await self.tgb.bot.updater.stop()
+        self.tgb.bot.updater.is_idle = False

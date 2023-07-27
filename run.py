@@ -7,32 +7,37 @@ import shutil
 import importlib
 import traceback
 import nest_asyncio
+
 import emoji as emo
 import utils as utl
 import constants as c
 
 from pathlib import Path
 from loguru import logger
-from dotenv import load_dotenv
 from zipfile import ZipFile
+from fastapi import APIRouter
+from dotenv import load_dotenv
 from telegram import Chat, Update
 from telegram.error import InvalidToken
 from telegram.constants import ParseMode
 from telegram.ext import Application, Defaults, MessageHandler, ContextTypes, filters, CallbackContext
 from config import ConfigManager
+from web import WebAppWrapper
 
 
 class TelegramBot:
 
     def __init__(self):
-        self.app = None
+        self.bot = None
         self.cfg = None
+        self.web = None
         self.plugins = dict()
+        self.endpoints = APIRouter()
 
     async def run(self, config: ConfigManager, token: str):
         self.cfg = config
 
-        self.app = (
+        self.bot = (
             Application.builder()
             .defaults(Defaults(parse_mode=ParseMode.HTML))
             .token(token)
@@ -44,7 +49,7 @@ class TelegramBot:
 
         # Add handler for file downloads (plugin updates)
         logger.info("Setting up plugin updates...")
-        self.app.add_handler(
+        self.bot.add_handler(
             MessageHandler(
                 filters.Document.ZIP | filters.Document.FileExtension('py'),
                 self._update_handler)
@@ -52,11 +57,11 @@ class TelegramBot:
 
         # Handle all Telegram related errors
         logger.info("Setting up error handling...")
-        self.app.add_error_handler(self._error_handler)
+        self.bot.add_error_handler(self._error_handler)
 
         try:
             # Notify admin about bot start
-            await self.app.updater.bot.send_message(
+            await self.bot.updater.bot.send_message(
                 chat_id=self.cfg.get('admin_tg_id'),
                 text=f'{emo.ROBOT} Bot is up and running!'
             )
@@ -64,8 +69,15 @@ class TelegramBot:
             logger.error('Invalid Telegram bot token')
             return
 
+        # Start webserver
+        if self.cfg.get('webserver', 'enabled'):
+            logger.info("Setting up webserver...")
+            port = self.cfg.get('webserver', 'port')
+            self.web = WebAppWrapper(self.endpoints, port)
+            self.web.start()
+
         # Start polling for updates
-        self.app.run_polling(drop_pending_updates=True)
+        self.bot.run_polling(drop_pending_updates=True)
 
     async def load_plugins(self):
         """ Load all plugins from the 'plugins' folder """
@@ -124,7 +136,7 @@ class TelegramBot:
 
             # Remove plugin handlers
             for handler in plugin.handlers:
-                self.app.remove_handler(handler)
+                self.bot.remove_handler(handler)
 
             # Remove plugin
             del plugin

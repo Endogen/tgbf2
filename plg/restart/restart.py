@@ -21,7 +21,7 @@ class Restart(TGBFPlugin):
             return
 
         try:
-            await self.tgb.app.bot.edit_message_text(
+            await self.tgb.bot.bot.edit_message_text(
                 chat_id=chat_id,
                 message_id=mess_id,
                 text=f"{emo.DONE} Restarting bot..."

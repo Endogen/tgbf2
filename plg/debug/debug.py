@@ -49,7 +49,7 @@ class Debug(TGBFPlugin):
             if self.is_private(update.message):
                 await update.message.reply_text(msg)
             else:
-                await self.tgb.app.bot.send_message(
+                await self.tgb.bot.bot.send_message(
                     update.effective_user.id,
                     f"{msg}\n\nChat details: <code>{update.effective_chat.to_json()}</code>")
         except Exception as e:
