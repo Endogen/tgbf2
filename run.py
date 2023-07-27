@@ -252,7 +252,7 @@ if __name__ == "__main__":
             rotation="5 MB"
         )
 
-    nest_asyncio.apply()  # TODO: How to get rid of that?
+    nest_asyncio.apply()  # FIXME: How to get rid of that?
 
     asyncio.run(TelegramBot().run(
         ConfigManager(c.DIR_CFG / c.FILE_CFG),
