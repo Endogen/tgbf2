@@ -11,3 +11,5 @@
 - Dynamic routes https://stackoverflow.com/questions/70783994/reload-routes-in-fastapi-during-runtime
 - Singleton needed? No! Better make sure multiple instances can be run with different names
 - Describe possible parameters in .env file
+- How to enable webserver and add endpoints:
+  - "self.add_endpoint('/about', self.action)"
