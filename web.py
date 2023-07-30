@@ -14,12 +14,18 @@ class WebAppWrapper(Thread):
         Thread.__init__(self)
 
     def add_endpoint(self, path, endpoint):
-        self.router.add_api_route(path, endpoint)
+        if self.app:
+            self.app.add_api_route(path, endpoint)
+        else:
+            self.router.add_api_route(path, endpoint)
 
     def remove_endpoint(self, path):
         for route in self.router.routes:
             if route.path == path:
-                self.router.routes.remove(route)
+                if self.app:
+                    self.app.routes.remove(route)
+                else:
+                    self.router.routes.remove(route)
 
     def run(self):
         self.app = FastAPI()

@@ -15,7 +15,6 @@ import constants as c
 from pathlib import Path
 from loguru import logger
 from zipfile import ZipFile
-from fastapi import APIRouter
 from dotenv import load_dotenv
 from telegram import Chat, Update
 from telegram.error import InvalidToken
@@ -140,6 +139,10 @@ class TelegramBot:
             for handler in plugin.handlers:
                 self.bot.remove_handler(handler)
 
+            # Remove plugin endpoints
+            for endpoint in plugin.endpoints:
+                self.web.remove_endpoint(endpoint)
+
             # Remove plugin
             del plugin
             del self.plugins[name]
@@ -246,7 +249,7 @@ class TelegramBot:
 
 
 if __name__ == "__main__":
-    # Load parameters from .env file
+    # Load data from .env file
     load_dotenv()
 
     log_level = os.getenv('LOG_LEVEL') if os.getenv('LOG_LEVEL') else 'INFO'

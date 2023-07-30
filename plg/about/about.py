@@ -7,7 +7,6 @@ class About(TGBFPlugin):
 
     async def init(self):
         await self.add_handler(CommandHandler(self.handle, self.init_callback, block=False))
-        await self.add_endpoint('/about', self.action)  # TODO: Remove
 
     @TGBFPlugin.send_typing
     async def init_callback(self, update: Update, context: CallbackContext):
@@ -18,7 +17,3 @@ class About(TGBFPlugin):
 
         if not self.is_private(update.message):
             self.remove_msg_after(update.message, msg, after_secs=20)
-
-    # TODO: Remove
-    async def action(self):
-        return {'message': 'Worked'}

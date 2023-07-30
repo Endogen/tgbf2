@@ -132,8 +132,16 @@ class TGBFPlugin:
         self.log.info(f"Plugin '{self.name}': {type(handler).__name__} added")
 
     async def add_endpoint(self, name: str, action):
+        """ Adds a webserver endpoint to FastAPI """
+
         self.tgb.web.add_endpoint(name, action)
         self.endpoints[name] = action
+
+    async def remove_endpoint(self, name: str):
+        """ Remove an existing endpoint from webserver """
+
+        self.tgb.web.remove_endpoint(name)
+        del self.endpoints[name]
 
     async def get_plg_info(self, replace: dict = None):
         """ Return info about the command. Default resource '<plugin>.txt'
