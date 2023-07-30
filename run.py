@@ -7,6 +7,7 @@ import shutil
 import importlib
 import traceback
 import nest_asyncio
+from starlette.responses import FileResponse
 
 import emoji as emo
 import utils as utl
@@ -46,6 +47,9 @@ class TelegramBot:
         # Init webserver
         port = self.cfg.get('webserver', 'port')
         self.web = WebAppWrapper(port=port)
+
+        # Add default root route
+        self.web.add_endpoint('/', lambda: FileResponse(c.DIR_RES / 'root.html'))
 
         # Load all plugins
         await self.load_plugins()
