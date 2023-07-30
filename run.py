@@ -138,6 +138,10 @@ class TelegramBot:
             for handler in plugin.handlers:
                 self.bot.remove_handler(handler)
 
+            # Remove plugin endpoints
+            for endpoint in plugin.endpoints:
+                plugin.remove_endpoint(endpoint)
+
             # Remove plugin
             del plugin
             del self.plugins[name]

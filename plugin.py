@@ -34,6 +34,9 @@ class TGBFPlugin:
         # All bot handlers for this plugin
         self._handlers: List[BaseHandler] = list()
 
+        # All endpoints of this plugin
+        self._endpoints: List[str] = list()
+
         # Access to global config
         self._cfg_global = self._tgb.cfg
 
@@ -112,6 +115,11 @@ class TGBFPlugin:
         """ Return a list of bot handlers for this plugin """
         return self._handlers
 
+    @property
+    def endpoints(self) -> List:
+        """ Return a list of bot endpoints for this plugin """
+        return self._endpoints
+
     async def add_handler(self, handler: BaseHandler, group: int = None):
         """ Will add bot handlers to this plugins list of handlers
          and also add them to the bot dispatcher """
@@ -125,11 +133,13 @@ class TGBFPlugin:
 
     def add_endpoint(self, name: str, action):
         self.tgb.endpoints.add_api_route(name, action)
+        self.endpoints.append(name)
 
     def remove_endpoint(self, name: str):
         for route in self.tgb.endpoints.routes:
             if route.path == name:
                 self.tgb.endpoints.routes.remove(route)
+                self.endpoints.remove(name)
 
     async def get_plg_info(self, replace: dict = None):
         """ Return info about the command. Default resource '<plugin>.txt'
