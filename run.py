@@ -48,6 +48,7 @@ class TelegramBot:
         port = self.cfg.get('webserver', 'port')
         self.web = WebAppWrapper(port=port)
 
+        # TODO: Add favicon
         # Add default root route
         self.web.add_endpoint('/', lambda: FileResponse(c.DIR_RES / 'root.html'))
 
