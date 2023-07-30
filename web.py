@@ -14,15 +14,5 @@ class WebAppWrapper(Thread):
 
         Thread.__init__(self)
 
-    # FIXME: Not working...
-    async def add_endpoint(self, name: str, action):
-        self.router.add_api_route(name, action)
-
-    # FIXME: Not working...
-    def remove_endpoint(self, name: str):
-        for route in self.router.routes:
-            if route.path == name:
-                self.router.routes.remove(route)
-
     def run(self):
         uvicorn.run(self.app, host="0.0.0.0", port=self.port)

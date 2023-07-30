@@ -131,15 +131,9 @@ class TGBFPlugin:
 
         self.log.info(f"Plugin '{self.name}': {type(handler).__name__} added")
 
-    def add_endpoint(self, name: str, action):
-        self.tgb.endpoints.add_api_route(name, action)
+    async def add_endpoint(self, name: str, action):
+        await self.tgb.endpoints.add_api_route(name, action)
         self.endpoints.append(name)
-
-    def remove_endpoint(self, name: str):
-        for route in self.tgb.endpoints.routes:
-            if route.path == name:
-                self.tgb.endpoints.routes.remove(route)
-                self.endpoints.remove(name)
 
     async def get_plg_info(self, replace: dict = None):
         """ Return info about the command. Default resource '<plugin>.txt'
