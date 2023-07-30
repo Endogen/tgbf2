@@ -28,7 +28,7 @@ class WebAppWrapper(Thread):
                     self.router.routes.remove(route)
 
     def run(self):
-        self.app = FastAPI()
+        self.app = FastAPI(title='TGBF2')
         self.app.include_router(self.router)
 
         uvicorn.run(self.app, host="0.0.0.0", port=self.port)
