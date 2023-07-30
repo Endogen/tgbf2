@@ -11,7 +11,7 @@ from pathlib import Path
 from loguru import logger
 from functools import wraps
 from loguru._logger import Logger
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Callable
 from telegram.constants import ChatAction
 from telegram import Chat, Update, Message
 from telegram.ext import CallbackContext, BaseHandler, Job
@@ -35,7 +35,7 @@ class TGBFPlugin:
         self._handlers: List[BaseHandler] = list()
 
         # All endpoints of this plugin
-        self._endpoints: List[str] = list()
+        self._endpoints: Dict[str, Callable] = dict()
 
         # Access to global config
         self._cfg_global = self._tgb.cfg
@@ -116,7 +116,7 @@ class TGBFPlugin:
         return self._handlers
 
     @property
-    def endpoints(self) -> List:
+    def endpoints(self) -> Dict[str, Callable]:
         """ Return a list of bot endpoints for this plugin """
         return self._endpoints
 
@@ -132,8 +132,8 @@ class TGBFPlugin:
         self.log.info(f"Plugin '{self.name}': {type(handler).__name__} added")
 
     async def add_endpoint(self, name: str, action):
-        await self.tgb.endpoints.add_api_route(name, action)
-        self.endpoints.append(name)
+        self.tgb.web.add_endpoint(name, action)
+        self.endpoints[name] = action
 
     async def get_plg_info(self, replace: dict = None):
         """ Return info about the command. Default resource '<plugin>.txt'

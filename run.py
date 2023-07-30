@@ -32,17 +32,21 @@ class TelegramBot:
         self.cfg = None
         self.web = None
         self.plugins = dict()
-        self.endpoints = APIRouter()
 
     async def run(self, config: ConfigManager, token: str):
         self.cfg = config
 
+        # Init bot
         self.bot = (
             Application.builder()
             .defaults(Defaults(parse_mode=ParseMode.HTML))
             .token(token)
             .build()
         )
+
+        # Init webserver
+        port = self.cfg.get('webserver', 'port')
+        self.web = WebAppWrapper(port=port)
 
         # Load all plugins
         await self.load_plugins()
@@ -72,8 +76,6 @@ class TelegramBot:
         # Start webserver
         if self.cfg.get('webserver', 'enabled'):
             logger.info("Setting up webserver...")
-            port = self.cfg.get('webserver', 'port')
-            self.web = WebAppWrapper(self.endpoints, port)
             self.web.start()
 
         # Start polling for updates
