@@ -1,0 +1,10 @@
+{
+    "apps": [{
+        "name": "tgbf2",
+        "script": "run.py",
+        "instances": "1",
+        "wait_ready": true,
+        "autorestart": true,
+        "interpreter" : "/home/endogen/.cache/pypoetry/virtualenvs/tgbf2-WUuJEEsf-py3.11/bin/python"
+    }]
+}
