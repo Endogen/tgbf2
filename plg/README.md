@@ -1,1 +1,2 @@
-Add info about how to write a plugin and describe the plugin properties and methods
+- Add info about how to write a plugin and describe the plugin properties and methods
+- Add example code to show how to handle SQLite
