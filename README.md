@@ -2,7 +2,6 @@
 - Remove DB plugin and instead create how-to where the details are mentioned
 - If plugin 'debug' is not being used then no need to install 'psutil' module
 
-
 ## Enable webserver
 - In global config file `cfg/globla.cfg`  set `webserver - enabled` to `true`
 - In a plugin you can add following to enable a new route: `self.add_endpoint('/about', self.action)`
@@ -44,7 +43,7 @@ TODO
 
 ## Run in background
 - `screen -S tgbf2`
-- start with `poetry run python run.py`
+- start with `poetry run python main.py`
 - go back to your screen with `screen -r tgbf2`
 
 ## Run with PM2 (ecosystem file)
