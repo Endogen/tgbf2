@@ -110,15 +110,10 @@ class TelegramBot:
             importlib.reload(module)
 
             async with getattr(module, name.capitalize())(self) as plugin:
-                try:
-                    self.plugins[name] = plugin
-                    msg = f"Plugin '{name}' enabled"
-                    logger.info(msg)
-                    return True, msg
-                except Exception as e:
-                    msg = f"Plugin '{name}' initialization failed: {e}"
-                    logger.error(msg)
-                    return False, str(e)
+                self.plugins[name] = plugin
+                msg = f"Plugin '{name}' enabled"
+                logger.info(msg)
+                return True, msg
 
         except Exception as e:
             msg = f"Plugin '{name}' can not be enabled: {e}"
