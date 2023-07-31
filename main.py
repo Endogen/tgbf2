@@ -127,13 +127,8 @@ class TelegramBot:
         if name in self.plugins:
             plugin = self.plugins[name]
 
-            try:
-                # Run plugins own cleanup method
-                await plugin.cleanup()
-            except Exception as e:
-                msg = f"Plugin '{plugin.name}' cleanup failed: {e}"
-                logger.error(msg)
-                return False, str(e)
+            # Run plugin's own cleanup method
+            await plugin.cleanup()
 
             # Remove plugin handlers
             for handler in plugin.handlers:
