@@ -17,7 +17,7 @@ from telegram import Chat, Update, Message
 from telegram.ext import CallbackContext, BaseHandler, Job
 from datetime import datetime, timedelta
 from config import ConfigManager
-from run import TelegramBot
+from main import TelegramBot
 
 
 class TGBFPlugin:

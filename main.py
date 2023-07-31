@@ -7,8 +7,6 @@ import shutil
 import importlib
 import traceback
 import nest_asyncio
-from starlette.responses import FileResponse
-
 import emoji as emo
 import utils as utl
 import constants as c
@@ -21,6 +19,7 @@ from telegram import Chat, Update
 from telegram.error import InvalidToken
 from telegram.constants import ParseMode
 from telegram.ext import Application, Defaults, MessageHandler, ContextTypes, filters, CallbackContext
+from starlette.responses import FileResponse
 from config import ConfigManager
 from web import WebAppWrapper
 
@@ -256,15 +255,19 @@ if __name__ == "__main__":
     # Load data from .env file
     load_dotenv()
 
+    # Read parameters from .env file
     log_level = os.getenv('LOG_LEVEL') if os.getenv('LOG_LEVEL') else 'INFO'
     log_into_file = os.getenv('LOG_INTO_FILE') if os.getenv('LOG_INTO_FILE') else True
 
+    # Remove standard logger
     logger.remove()
 
+    # Add new loguru logger
     logger.add(
         sys.stderr,
         level=log_level)
 
+    # Save log in file
     if log_into_file:
         logger.add(
             Path(Path('log') / Path('{time}.log')),
@@ -273,7 +276,7 @@ if __name__ == "__main__":
             rotation="5 MB"
         )
 
-    nest_asyncio.apply()  # FIXME: How to get rid of that?
+    nest_asyncio.apply()
 
     asyncio.run(TelegramBot().run(
         ConfigManager(c.DIR_CFG / c.FILE_CFG),
