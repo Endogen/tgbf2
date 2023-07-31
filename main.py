@@ -107,6 +107,8 @@ class TelegramBot:
             module_path = f"{c.DIR_PLG}.{name}.{name}"
             module = importlib.import_module(module_path)
 
+            importlib.reload(module)
+
             async with getattr(module, name.capitalize())(self) as plugin:
                 try:
                     self.plugins[name] = plugin
