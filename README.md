@@ -1,4 +1,5 @@
 - Explain core concepts
+  - Naming conventions for plugins
 - Remove DB plugin and instead create how-to where the details are mentioned
 - If plugin 'debug' is not being used then no need to install 'psutil' module
 
