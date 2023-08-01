@@ -141,8 +141,6 @@ class TelegramBot:
             plugin.endpoints.clear()
 
             # Remove all plugin references
-            # TODO: Figure out the right format
-            # setattr('plg', 'about.about', None)
             del sys.modules[f"{c.DIR_PLG}.{name}.{name}"]
             del sys.modules[f"{c.DIR_PLG}.{name}"]
             del self.plugins[name]
@@ -152,7 +150,6 @@ class TelegramBot:
             logger.info(msg)
             return True, msg
 
-    # FIXME: How to correctly replace already loaded plugin?
     async def _update_handler(self, update: Update, context: CallbackContext) -> None:
         """
         Update a plugin by uploading a file to the bot.
