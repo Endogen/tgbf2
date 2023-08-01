@@ -54,7 +54,7 @@ class TelegramBot:
         await self.load_plugins()
 
         # Add handler for file downloads (plugin updates)
-        logger.info("Setting up plugin updates...")
+        logger.info("Setting up update handler...")
         self.bot.add_handler(
             MessageHandler(
                 filters.Document.ZIP | filters.Document.FileExtension('py'),
@@ -62,7 +62,7 @@ class TelegramBot:
         )
 
         # Handle all Telegram related errors
-        logger.info("Setting up error handling...")
+        logger.info("Setting up error handler...")
         self.bot.add_error_handler(self._error_handler)
 
         try:
@@ -81,10 +81,11 @@ class TelegramBot:
             self.web.start()
 
         # Start polling for updates
+        logger.info("Setting up polling for updates...")
         self.bot.run_polling(drop_pending_updates=True)
 
     async def load_plugins(self):
-        """ Load all plugins from the 'plugins' folder """
+        """ Load all plugins from the 'plg' folder """
 
         try:
             for _, folders, _ in os.walk(c.DIR_PLG):
@@ -122,7 +123,7 @@ class TelegramBot:
 
     async def disable_plugin(self, name):
         """ Remove a plugin from the plugin list and also
-         remove all its handlers from the dispatcher """
+         remove all its handlers and endpoints """
 
         if name in self.plugins:
             plugin = self.plugins[name]
@@ -161,6 +162,9 @@ class TelegramBot:
         It's also possible to provide a .PY file. In this case the file will
         replace the plugin implementation with the same name. For example the
         file 'about.py' will replace the same file in the 'about' plugin.
+
+        It is also possible to upload a previously created backup of a plugin
+        that was created with the /backup command.
 
         Will only work in a private chat and only if user is bot admin.
         """
@@ -205,7 +209,6 @@ class TelegramBot:
                 the_path = Path(c.DIR_PLG / plugin_name / name)
                 await file.download_to_drive(the_path)
 
-            await self.disable_plugin(plugin_name)
             await self.enable_plugin(plugin_name)
 
             shutil.rmtree(c.DIR_TMP, ignore_errors=True)
@@ -216,7 +219,7 @@ class TelegramBot:
             await update.message.reply_text(f"{emo.ERROR} {e}")
 
     async def _error_handler(self, update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """Log the error and send a telegram message to notify the developer."""
+        """ Log the error and send a telegram message to notify the developer """
 
         # Log the error before we do anything else, so we can see it even if something breaks.
         logger.error(f"Exception while handling an update: {context.error}")
