@@ -138,9 +138,11 @@ class TelegramBot:
             for endpoint in plugin.endpoints:
                 self.web.remove_endpoint(endpoint)
 
-            # Remove plugin
-            del plugin
+            # Remove all plugin references
+            del sys.modules[f"{c.DIR_PLG}.{name}.{name}"]
+            del sys.modules[f"{c.DIR_PLG}.{name}"]
             del self.plugins[name]
+            del plugin
 
             msg = f"Plugin '{name}' disabled"
             logger.info(msg)
