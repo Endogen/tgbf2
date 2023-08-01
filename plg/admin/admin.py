@@ -15,6 +15,13 @@ class Admin(TGBFPlugin):
     async def init_callback(self, update: Update, context: CallbackContext):
         if len(context.args) < 2:
             await update.message.reply_text(await self.get_plg_info())
+
+            for name, plugin in self.plugins.items():
+                if name == 'about':
+                    # TODO: Why doesn't that work?
+                    plugin.remove_handler(plugin.handlers[0])
+                    print('WORKED')
+
             return
 
         sub_command = context.args[0].lower()

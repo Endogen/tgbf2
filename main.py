@@ -139,6 +139,8 @@ class TelegramBot:
                 self.web.remove_endpoint(endpoint)
 
             # Remove all plugin references
+            # TODO: What to do with this?
+            #setattr('plg', 'about.about', None)  # TODO: Figure out the right format
             del sys.modules[f"{c.DIR_PLG}.{name}.{name}"]
             del sys.modules[f"{c.DIR_PLG}.{name}"]
             del self.plugins[name]
