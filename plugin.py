@@ -11,7 +11,7 @@ from pathlib import Path
 from loguru import logger
 from functools import wraps
 from loguru._logger import Logger
-from typing import List, Tuple, Dict, Callable
+from typing import Tuple, Dict, Callable
 from telegram.constants import ChatAction
 from telegram import Chat, Update, Message
 from telegram.ext import CallbackContext, BaseHandler, Job
