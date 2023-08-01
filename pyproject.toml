@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "tgbf2"
-version = "0.1.0"
+name = "TGBF2"
+version = "1.0.0"
 description = "Telegram Bot Framework 2"
 authors = ["endogen <endogen@protonmail.com>"]
 
