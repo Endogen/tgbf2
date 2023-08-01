@@ -2,6 +2,7 @@
   - Naming conventions for plugins
 - Remove DB plugin and instead create how-to where the details are mentioned
 - If plugin 'debug' is not being used then no need to install 'psutil' module
+- Default parse mode is HTML
 
 ## Enable webserver
 - In global config file `cfg/globla.cfg`  set `webserver - enabled` to `true`

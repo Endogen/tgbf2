@@ -23,6 +23,7 @@ from main import TelegramBot
 class TGBFPlugin:
 
     def __init__(self, tgb: TelegramBot):
+        # Parent that instantiated this plugin
         self._tgb = tgb
 
         # Set default logger
@@ -158,11 +159,15 @@ class TGBFPlugin:
 
         self.log.info(f"Plugin '{self.name}': Endpoint '{name}' removed")
 
-    async def get_plg_info(self, replace: dict = None):
-        """ Return info about the command. Default resource '<plugin>.txt'
-         will be loaded from the resource folder and if you provide a
-         dict with '<placeholder>,<value>' entries then placeholders in
-         the resource will be replaced with the corresponding <value> """
+    async def get_info(self, replace: dict = None):
+        """
+        Return info about the command. Default resource '<plugin>.txt'
+        will be loaded from the resource folder and if you provide a
+        dict with '<placeholder>,<value>' entries then placeholders in
+        the resource will be replaced with the corresponding <value>.
+
+        The placeholders need to be wrapped in double curly brackets
+        """
 
         usage = await self.get_resource(f"{self.name}.txt")
 
@@ -449,17 +454,16 @@ class TGBFPlugin:
                 datetime.utcnow() + timedelta(seconds=after_secs),
                 data=f"{message.chat_id}_{message.message_id}")
 
-    async def notify(self, some_input) -> bool:
+    async def notify(self, msg: str | Exception) -> bool:
         """ Admin in global config will get a message with the given text.
          Primarily used for exceptions but can be used with other inputs too. """
 
-        if isinstance(some_input, Exception):
-            some_input = repr(some_input)
+        msg = repr(msg) if isinstance(msg, Exception) else msg
 
         admin = self.cfg_global.get('admin_tg_id')
 
         try:
-            await self.tgb.bot.updater.bot.send_message(admin, f"{emo.ALERT} {some_input}")
+            await self.tgb.bot.updater.bot.send_message(admin, f"{emo.ALERT} {msg}")
         except Exception as e:
             error = f"Not possible to notify admin id '{admin}'"
             self.log.error(f"{error}: {e}")

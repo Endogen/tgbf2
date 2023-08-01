@@ -11,6 +11,6 @@ class Start(TGBFPlugin):
     @TGBFPlugin.send_typing
     async def init_callback(self, update: Update, context: CallbackContext):
         await update.message.reply_text(
-            await self.get_plg_info(),
+            await self.get_info(),
             disable_web_page_preview=True
         )

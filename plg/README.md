@@ -1,3 +1,4 @@
 - Add info about how to write a plugin and describe the plugin properties and methods
 - Add example code to show how to handle SQLite
 - Step-by-Step guide to create a plugin
+- Logging in plugins with 'log.'
