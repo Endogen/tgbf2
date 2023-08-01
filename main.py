@@ -131,16 +131,18 @@ class TelegramBot:
             await plugin.cleanup()
 
             # Remove plugin handlers
-            for handler in plugin.handlers:
-                self.bot.remove_handler(handler)
+            for group, handler in plugin.handlers.items():
+                self.bot.remove_handler(handler, group)
+            plugin.handlers.clear()
 
             # Remove plugin endpoints
             for endpoint in plugin.endpoints:
                 self.web.remove_endpoint(endpoint)
+            plugin.endpoints.clear()
 
             # Remove all plugin references
-            # TODO: What to do with this?
-            #setattr('plg', 'about.about', None)  # TODO: Figure out the right format
+            # TODO: Figure out the right format
+            # setattr('plg', 'about.about', None)
             del sys.modules[f"{c.DIR_PLG}.{name}.{name}"]
             del sys.modules[f"{c.DIR_PLG}.{name}"]
             del self.plugins[name]

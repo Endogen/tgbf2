@@ -15,25 +15,25 @@ class Admin(TGBFPlugin):
     async def init_callback(self, update: Update, context: CallbackContext):
         if len(context.args) < 2:
             await update.message.reply_text(await self.get_plg_info())
-
-            for name, plugin in self.plugins.items():
-                if name == 'about':
-                    # TODO: Why doesn't that work?
-                    plugin.remove_handler(plugin.handlers[0])
-                    print('WORKED')
-
             return
 
         sub_command = context.args[0].lower()
         plg_name = context.args[1].lower()
 
         if sub_command == 'disable':
-            await self.tgb.disable_plugin(plg_name)
-            await update.message.reply_text(f'{emo.DONE} Disabled plugin {plg_name}')
+            if plg_name in list(self.plugins.keys()):
+                await self.tgb.disable_plugin(plg_name)
+                await update.message.reply_text(f"{emo.DONE} Plugin '{plg_name}' disabled")
+            else:
+                await update.message.reply_text(f"{emo.WARNING} Plugin '{plg_name}' not available")
 
         elif sub_command == 'enable':
-            await self.tgb.enable_plugin(plg_name)
-            await update.message.reply_text(f'{emo.DONE} Enabled plugin {plg_name}')
+            worked, msg = await self.tgb.enable_plugin(plg_name)
+
+            if worked:
+                await update.message.reply_text(f"{emo.DONE} Plugin '{plg_name}' enabled")
+            else:
+                await update.message.reply_text(f"{emo.WARNING} Plugin '{plg_name}' not available")
 
         else:
             await update.message.reply_text(f'{emo.WARNING} Unknown argument(s)')

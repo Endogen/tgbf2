@@ -32,7 +32,7 @@ class TGBFPlugin:
         self._name = type(self).__name__.lower()
 
         # All bot handlers for this plugin
-        self._handlers: List[BaseHandler] = list()
+        self._handlers: Dict[int, BaseHandler] = dict()
 
         # All endpoints of this plugin
         self._endpoints: Dict[str, Callable] = dict()
@@ -111,7 +111,7 @@ class TGBFPlugin:
         return self._cfg
 
     @property
-    def handlers(self) -> List[BaseHandler]:
+    def handlers(self) -> Dict[int, BaseHandler]:
         """ Return a list of bot handlers for this plugin """
         return self._handlers
 
@@ -127,15 +127,18 @@ class TGBFPlugin:
         group = group if group else utl.md5(self.name, to_int=True)
 
         self.tgb.bot.add_handler(handler, group)
-        self.handlers.append(handler)
+        self.handlers[group] = handler
 
         self.log.info(f"Plugin '{self.name}': {type(handler).__name__} added")
 
     async def remove_handler(self, handler: BaseHandler):
         """ Removed the given handler from the bot """
 
-        self.tgb.bot.remove_handler(handler)
-        self.handlers.remove(handler)
+        for g, h in self.handlers.items():
+            if h == handler:
+                self.tgb.bot.remove_handler(h, g)
+                del self.handlers[g]
+                break
 
         self.log.info(f"Plugin '{self.name}': {type(handler).__name__} removed")
 

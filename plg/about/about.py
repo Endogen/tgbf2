@@ -17,7 +17,3 @@ class About(TGBFPlugin):
 
         if not self.is_private(update.message):
             self.remove_msg_after(update.message, msg, after_secs=20)
-
-        # TODO: Doesn't work because handler isn't removed from bot
-        await self.remove_handler(self.handlers[0])
-        print('works')
