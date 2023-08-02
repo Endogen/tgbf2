@@ -43,12 +43,12 @@ class TelegramBot:
             .build()
         )
 
+        # TODO: Add favicon for every route
         # Init webserver
-        port = self.cfg.get('webserver', 'port')
-        self.web = WebAppWrapper(port=port)
-
-        # Add default root route
-        self.web.add_endpoint('/', lambda: FileResponse(c.DIR_RES / 'root.html'))
+        self.web = WebAppWrapper(
+            root_html=c.DIR_RES / 'root.html',
+            port=self.cfg.get('webserver', 'port')
+        )
 
         # Load all plugins
         await self.load_plugins()
