@@ -19,7 +19,6 @@ from telegram import Chat, Update
 from telegram.error import InvalidToken
 from telegram.constants import ParseMode
 from telegram.ext import Application, Defaults, MessageHandler, ContextTypes, filters, CallbackContext
-from starlette.responses import FileResponse
 from config import ConfigManager
 from web import WebAppWrapper
 
@@ -43,7 +42,6 @@ class TelegramBot:
             .build()
         )
 
-        # TODO: Add favicon for every route
         # Init webserver
         self.web = WebAppWrapper(
             root_html=c.DIR_RES / 'root.html',
