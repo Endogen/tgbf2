@@ -424,6 +424,7 @@ class TGBFPlugin:
         return Path(c.DIR_PLG, plugin)
 
     def get_plugin(self, plugin_name):
+        """ Return the plugin with the given name """
         if plugin_name in self.plugins:
             return self.plugins[plugin_name]
 
