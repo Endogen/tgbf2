@@ -3,7 +3,11 @@ import uvicorn
 from pathlib import Path
 from threading import Thread
 from fastapi import FastAPI, APIRouter
-from starlette.responses import FileResponse
+from starlette.responses import FileResponse, RedirectResponse
+
+
+class StarletteHTTPException:
+    pass
 
 
 class WebAppWrapper(Thread):
@@ -34,7 +38,10 @@ class WebAppWrapper(Thread):
         self.app = FastAPI(title='TGBF2')
         self.app.include_router(self.router)
 
+        @self.app.exception_handler(404)
+        async def ex(_, __): return RedirectResponse('/')
+
         @self.app.get('/', include_in_schema=False)
-        def root(): return FileResponse(self.root_html)
+        async def root(): return FileResponse(self.root_html)
 
         uvicorn.run(self.app, host="0.0.0.0", port=self.port)
