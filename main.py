@@ -51,6 +51,7 @@ class TelegramBot:
         # Load all plugins
         await self.load_plugins()
 
+        # TODO: Convert to plugin
         # Add handler for file downloads (plugin updates)
         logger.info("Setting up update handler...")
         self.bot.add_handler(
@@ -59,6 +60,7 @@ class TelegramBot:
                 self._update_handler)
         )
 
+        # TODO: Convert to plugin
         # Handle all Telegram related errors
         logger.info("Setting up error handler...")
         self.bot.add_error_handler(self._error_handler)
