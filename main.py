@@ -44,7 +44,7 @@ class TelegramBot:
 
         # Init webserver
         self.web = WebAppWrapper(
-            root_html=c.DIR_RES / 'root.html',
+            res_path=c.DIR_RES,
             port=self.cfg.get('webserver', 'port')
         )
 
