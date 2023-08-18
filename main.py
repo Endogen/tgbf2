@@ -1,24 +1,17 @@
-import asyncio
-import html
 import os
 import sys
-import json
-import shutil
+import asyncio
 import importlib
-import traceback
 import nest_asyncio
 import emoji as emo
-import utils as utl
 import constants as c
 
 from pathlib import Path
 from loguru import logger
-from zipfile import ZipFile
 from dotenv import load_dotenv
-from telegram import Chat, Update
 from telegram.error import InvalidToken
 from telegram.constants import ParseMode
-from telegram.ext import Application, Defaults, MessageHandler, ContextTypes, filters, CallbackContext
+from telegram.ext import Application, Defaults
 from config import ConfigManager
 from web import WebAppWrapper
 
@@ -50,20 +43,6 @@ class TelegramBot:
 
         # Load all plugins
         await self.load_plugins()
-
-        # TODO: Convert to plugin
-        # Add handler for file downloads (plugin updates)
-        logger.info("Setting up update handler...")
-        self.bot.add_handler(
-            MessageHandler(
-                filters.Document.ZIP | filters.Document.FileExtension('py'),
-                self._update_handler)
-        )
-
-        # TODO: Convert to plugin
-        # Handle all Telegram related errors
-        logger.info("Setting up error handler...")
-        self.bot.add_error_handler(self._error_handler)
 
         try:
             # Notify admin about bot start
@@ -150,103 +129,6 @@ class TelegramBot:
             msg = f"Plugin '{name}' disabled"
             logger.info(msg)
             return True, msg
-
-    async def _update_handler(self, update: Update, context: CallbackContext) -> None:
-        """
-        Update a plugin by uploading a file to the bot.
-
-        If you provide a .ZIP file then the content will be extracted into
-        the plugin with the same name as the file. For example the file
-        'about.zip' will be extracted into the 'about' plugin folder.
-
-        It's also possible to provide a .PY file. In this case the file will
-        replace the plugin implementation with the same name. For example the
-        file 'about.py' will replace the same file in the 'about' plugin.
-
-        It is also possible to upload a previously created backup of a plugin
-        that was created with the /backup command.
-
-        Will only work in a private chat and only if user is bot admin.
-        """
-
-        if not isinstance(update, Update):
-            return
-        if not update.message:
-            return
-        if update.effective_user.id != int(self.cfg.get('admin_tg_id')):
-            return
-        if (await context.bot.get_chat(update.message.chat_id)).type != Chat.PRIVATE:
-            return
-
-        name = update.message.document.file_name
-        zipped = False
-
-        try:
-            if name.endswith(".py"):
-                plugin_name = name.replace(".py", "")
-            elif name.endswith(".zip"):
-                zipped = True
-                if utl.is_numeric(name[:13]):
-                    plugin_name = name[14:].replace(".zip", "")
-                else:
-                    plugin_name = name.replace(".zip", "")
-            else:
-                logger.warning(f"{emo.ERROR} Wrong file format for update")
-                return
-
-            file = await update.message.effective_attachment.get_file()
-
-            if zipped:
-                Path.mkdir(c.DIR_TMP, parents=True, exist_ok=True)
-                zip_path = c.DIR_TMP / name
-
-                await file.download_to_drive(zip_path)
-
-                with ZipFile(zip_path, 'r') as zip_file:
-                    the_path = Path(c.DIR_PLG / plugin_name)
-                    zip_file.extractall(the_path)
-            else:
-                the_path = Path(c.DIR_PLG / plugin_name / name)
-                await file.download_to_drive(the_path)
-
-            await self.enable_plugin(plugin_name)
-
-            shutil.rmtree(c.DIR_TMP, ignore_errors=True)
-
-            await update.message.reply_text(f"{emo.DONE} Plugin successfully loaded")
-        except Exception as e:
-            logger.error(e)
-            await update.message.reply_text(f"{emo.ERROR} {e}")
-
-    async def _error_handler(self, update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """ Log the error and send a telegram message to notify the developer """
-
-        # Log the error before we do anything else, so we can see it even if something breaks.
-        logger.error(f"Exception while handling an update: {context.error}")
-
-        # traceback.format_exception returns the usual python message about an exception, but as a
-        # list of strings rather than a single string, so we have to join them together.
-        tb_list = traceback.format_exception(None, context.error, context.error.__traceback__)
-        tb_string = "".join(tb_list)
-
-        logger.error(tb_string)
-
-        # Build the message with some markup and additional information about what happened.
-        # You might need to add some logic to deal with messages longer than the 4096-character limit.
-        update_str = update.to_dict() if isinstance(update, Update) else str(update)
-        message = (
-            f"{emo.ALERT} An exception was raised while handling an update\n\n"
-            f"<pre>update = {html.escape(json.dumps(update_str, indent=2, ensure_ascii=False))}"
-            "</pre>\n\n"
-            f"<pre>context.chat_data = {html.escape(str(context.chat_data))}</pre>\n\n"
-            f"<pre>context.user_data = {html.escape(str(context.user_data))}</pre>\n\n"
-            f"<pre>{html.escape(tb_string)}</pre>"
-        )
-
-        # Finally, send the message
-        await context.bot.send_message(
-            chat_id=self.cfg.get('admin_tg_id'), text=message, parse_mode=ParseMode.HTML
-        )
 
 
 if __name__ == "__main__":
