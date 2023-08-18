@@ -1,4 +1,4 @@
-def is_numeric(string) -> bool:
+def is_numeric(string: str) -> bool:
     """ Also accepts '.' in the string. Function 'isnumeric()' doesn't """
     try:
         float(string)
@@ -86,7 +86,7 @@ def format(value,
     return v
 
 
-def build_menu(buttons, n_cols=1, header_buttons=None, footer_buttons=None):
+def build_menu(buttons, n_cols: int = 1, header_buttons=None, footer_buttons=None):
     """ Build button-menu for Telegram """
     menu = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]
 
@@ -98,11 +98,11 @@ def build_menu(buttons, n_cols=1, header_buttons=None, footer_buttons=None):
     return menu
 
 
-def str2bool(v):
-    return v.lower() in ("yes", "true", "t", "1")
+def str2bool(value: str):
+    return value.lower() in ("yes", "true", "t", "1")
 
 
-def split_msg(msg, max_len=None, split_char="\n", only_one=False):
+def split_msg(msg: str, max_len: int = None, split_char: str = "\n", only_one: bool = False):
     """ Restrict message length to max characters as defined by Telegram """
     if not max_len:
         import constants as con
@@ -125,30 +125,30 @@ def split_msg(msg, max_len=None, split_char="\n", only_one=False):
     return messages
 
 
-def encode_url(trxid):
+def encode_url(url: str):
     import urllib.parse as ul
-    return ul.quote_plus(trxid)
+    return ul.quote_plus(url)
 
 
-def random_id(length=8):
+def random_id(length: int = 8):
     import string, random
     alphabet = string.ascii_uppercase + string.digits
     return ''.join(random.choices(alphabet, k=length))
 
 
-def md5(input_str: str, to_int=False):
+def md5(input_str: str, to_int: bool = False):
     import hashlib
     md5_hash = hashlib.md5(input_str.encode("utf-8")).hexdigest()
     return int(md5_hash, 16) if to_int else md5_hash
 
 
-def to_unix_time(date_time, millis=False):
+def to_unix_time(date_time: datetime, millis: bool = False):
     from datetime import datetime
     seconds = (date_time - datetime(1970, 1, 1)).total_seconds()
     return int(seconds * 1000 if millis else seconds)
 
 
-def from_unix_time(seconds, millis=False):
+def from_unix_time(seconds, millis: bool = False):
     from datetime import datetime
     return datetime.utcfromtimestamp(seconds / 1000 if millis else seconds)
 
