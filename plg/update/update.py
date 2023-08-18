@@ -1,4 +1,5 @@
 import shutil
+import telegram
 
 import utils as utl
 import emoji as emo
@@ -7,7 +8,6 @@ import constants as con
 from pathlib import Path
 from zipfile import ZipFile
 from plugin import TGBFPlugin
-from telegram import Update, Chat
 from telegram.ext import CallbackContext, MessageHandler, filters
 
 
@@ -23,7 +23,7 @@ class Update(TGBFPlugin):
         )
         
     @TGBFPlugin.send_typing
-    async def init_callback(self, update: Update, context: CallbackContext):
+    async def init_callback(self, update: telegram.Update, context: CallbackContext):
         """
         Update a plugin by uploading a file to the bot.
 
@@ -41,13 +41,13 @@ class Update(TGBFPlugin):
         Will only work in a private chat and only if user is bot admin.
         """
 
-        if not isinstance(update, Update):
+        if not isinstance(update, telegram.Update):
             return
         if not update.message:
             return
-        if update.effective_user.id != int(self.cfg.get('admin_tg_id')):
+        if update.effective_user.id != int(self.cfg_global.get('admin_tg_id')):
             return
-        if (await context.bot.get_chat(update.message.chat_id)).type != Chat.PRIVATE:
+        if (await context.bot.get_chat(update.message.chat_id)).type != telegram.Chat.PRIVATE:
             return
 
         name = update.message.document.file_name
