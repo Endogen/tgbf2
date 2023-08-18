@@ -2,7 +2,6 @@ import os
 import os.path
 import zipfile
 import time
-import emoji as emo
 import constants as con
 
 from pathlib import Path
@@ -26,7 +25,7 @@ class Backup(TGBFPlugin):
             command = context.args[0].lower().strip()
 
             if not self.is_enabled(command):
-                msg = f"{emo.ERROR} Plugin '{command}' not available"
+                msg = f"{con.ERROR} Plugin '{command}' not available"
                 await update.message.reply_text(msg)
                 return
 
@@ -59,8 +58,8 @@ class Backup(TGBFPlugin):
         try:
             await context.bot.send_document(
                 chat_id=update.effective_user.id,
-                caption=f"{emo.DONE} Backup created",
+                caption=f"{con.DONE} Backup created",
                 document=open(filepath, 'rb'))
         except Exception as e:
             self.log.error(e)
-            await update.message.reply_text(f"{emo.ERROR} {e}")
+            await update.message.reply_text(f"{con.ERROR} {e}")

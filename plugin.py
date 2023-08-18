@@ -4,7 +4,6 @@ import inspect
 import asyncio
 
 import constants as c
-import emoji as emo
 import utils as utl
 
 from pathlib import Path
@@ -181,7 +180,7 @@ class TGBFPlugin:
             return usage
 
         await self.notify(f'No usage info for plugin <b>{self.name}</b>')
-        return f'{emo.ERROR} Could not retrieve usage info'
+        return f'{c.ERROR} Could not retrieve usage info'
 
     async def get_resource_global(self, filename):
         """ Return the content of the given file
@@ -464,7 +463,7 @@ class TGBFPlugin:
         admin = self.cfg_global.get('admin_tg_id')
 
         try:
-            await self.tgb.bot.updater.bot.send_message(admin, f"{emo.ALERT} {msg}")
+            await self.tgb.bot.updater.bot.send_message(admin, f"{c.ALERT} {msg}")
         except Exception as e:
             error = f"Not possible to notify admin id '{admin}'"
             self.log.error(f"{error}: {e}")
@@ -486,7 +485,7 @@ class TGBFPlugin:
 
             if update.message:
                 name = context.bot.username if context.bot.username else context.bot.name
-                msg = f"{emo.ERROR} Use this command in a chat with the bot @{name}"
+                msg = f"{c.ERROR} Use this command in a chat with the bot @{name}"
                 await update.message.reply_text(msg)
 
         return _private
@@ -504,7 +503,7 @@ class TGBFPlugin:
                     return func(self, update, context, **kwargs)
 
             if update.message:
-                msg = f"{emo.ERROR} Can only be used in a public chat"
+                msg = f"{c.ERROR} Can only be used in a public chat"
                 await update.message.reply_text(msg)
 
         return _public
@@ -548,7 +547,7 @@ class TGBFPlugin:
 
             for dependency in dependencies:
                 if dependency.lower() not in self.plugins:
-                    msg = f"{emo.ERROR} Plugin '{self.name}' is missing dependency '{dependency}'"
+                    msg = f"{c.ERROR} Plugin '{self.name}' is missing dependency '{dependency}'"
                     await update.message.reply_text(msg)
                     return
 

@@ -2,7 +2,6 @@ import shutil
 import telegram
 
 import utils as utl
-import emoji as emo
 import constants as con
 
 from pathlib import Path
@@ -63,7 +62,7 @@ class Update(TGBFPlugin):
                 else:
                     plugin_name = name.replace(".zip", "")
             else:
-                self.log.warning(f"{emo.ERROR} Wrong file format for update")
+                self.log.warning(f"{con.ERROR} Wrong file format for update")
                 return
 
             file = await update.message.effective_attachment.get_file()
@@ -85,7 +84,7 @@ class Update(TGBFPlugin):
 
             shutil.rmtree(con.DIR_TMP, ignore_errors=True)
 
-            await update.message.reply_text(f"{emo.DONE} Plugin successfully loaded")
+            await update.message.reply_text(f"{con.DONE} Plugin successfully loaded")
         except Exception as e:
             self.log.error(e)
-            await update.message.reply_text(f"{emo.ERROR} {e}")
+            await update.message.reply_text(f"{con.ERROR} {e}")

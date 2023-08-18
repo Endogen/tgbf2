@@ -1,4 +1,3 @@
-import emoji as emo
 import constants as con
 
 from pathlib import Path
@@ -32,4 +31,4 @@ class Logfile(TGBFPlugin):
         if file:
             await update.message.reply_document(document=file)
         else:
-            await update.message.reply_text(f"{emo.WARNING} No logfile found")
+            await update.message.reply_text(f"{con.WARNING} No logfile found")

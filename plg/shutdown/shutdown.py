@@ -1,6 +1,6 @@
 import asyncio
 import threading
-import emoji as emo
+import constants as con
 
 from telegram import Update
 from telegram.ext import CallbackContext, CommandHandler
@@ -16,7 +16,7 @@ class Shutdown(TGBFPlugin):
     @TGBFPlugin.private
     @TGBFPlugin.send_typing
     async def init_callback(self, update: Update, context: CallbackContext):
-        msg = f"{emo.GOODBYE} Shutting down..."
+        msg = f"{con.BYE} Shutting down..."
         await update.message.reply_text(msg)
         self.log.info(msg)
 

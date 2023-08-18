@@ -1,7 +1,7 @@
 import os
 import sys
 import asyncio
-import emoji as emo
+import constants as con
 
 from telegram import Update
 from telegram.ext import CommandHandler, CallbackContext
@@ -24,7 +24,7 @@ class Restart(TGBFPlugin):
             await self.tgb.bot.bot.edit_message_text(
                 chat_id=chat_id,
                 message_id=mess_id,
-                text=f"{emo.DONE} Restarting bot..."
+                text=f"{con.DONE} Restarting bot..."
             )
         except Exception as e:
             self.log.error(str(e))
@@ -36,7 +36,7 @@ class Restart(TGBFPlugin):
     @TGBFPlugin.private
     @TGBFPlugin.send_typing
     async def init_callback(self, update: Update, context: CallbackContext):
-        msg = await update.message.reply_text(f"{emo.HOURGLASS} Restarting bot...")
+        msg = await update.message.reply_text(f"{con.WAIT} Restarting bot...")
 
         chat_id = msg.chat_id
         mess_id = msg.message_id

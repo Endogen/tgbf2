@@ -1,4 +1,4 @@
-import emoji as emo
+import constants as con
 
 from plugin import TGBFPlugin
 from telegram import Update
@@ -26,11 +26,11 @@ class Database(TGBFPlugin):
         if sub_command == 'insert':
             insert_sql = await self.get_resource('insert_test.sql')
             await self.exec_sql(insert_sql, data)
-            await update.message.reply_text(f'{emo.DONE} Inserted <b>{data}</b>')
+            await update.message.reply_text(f'{con.DONE} Inserted <b>{data}</b>')
 
         elif sub_command == 'select':
             if not data.isdigit():
-                await update.message.reply_text(f'{emo.ERROR} Second argument needs to be an Integer')
+                await update.message.reply_text(f'{con.ERROR} Second argument needs to be an Integer')
                 return
 
             select_sql = await self.get_resource('select_test.sql')
@@ -42,9 +42,9 @@ class Database(TGBFPlugin):
                     data_string += (entry[0] + '\n')
 
                 await update.message.reply_text(
-                    f'{emo.DONE} Last {data} entries:\n{data_string}')
+                    f'{con.DONE} Last {data} entries:\n{data_string}')
             else:
-                await update.message.reply_text(f'{emo.ERROR} Something bad happened')
+                await update.message.reply_text(f'{con.ERROR} Something bad happened')
 
         else:
-            await update.message.reply_text(f'{emo.ERROR} Unknown argument(s)')
+            await update.message.reply_text(f'{con.ERROR} Unknown argument(s)')

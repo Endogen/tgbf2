@@ -19,3 +19,27 @@ FILE_CFG = Path('global').with_suffix(CFG_EXT)
 
 # Max Telegram message length
 MAX_TG_MSG_LEN = 4096
+
+INFO = "ℹ"
+WARNING = "⚠️"
+ERROR = "‼"
+BYE = "👋"
+DONE = "✅"
+HEART = "❤"
+ALERT = "🚨"
+ROBOT = "🤖"
+MONEY = "💸"
+WAIT = "⏳"
+STOP = "❌"
+RAIN = "🌧"
+LUCK = "🍀"
+SAD = "☹️"
+UP = "👍"
+DOWN = "👎"
+FIRE = "🔥"
+STARS = "✨"
+GREEN = "🟢"
+RED = "🔴"
+EYES = "👀"
+ZAP = "⚡️"
+COIN = "🪙"

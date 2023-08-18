@@ -2,7 +2,7 @@ import html
 import json
 import traceback
 
-import emoji as emo
+import constants as con
 
 from telegram import Update
 from telegram.ext import ContextTypes
@@ -32,7 +32,7 @@ class Error(TGBFPlugin):
         # You might need to add some logic to deal with messages longer than the 4096-character limit.
         update_str = update.to_dict() if isinstance(update, Update) else str(update)
         message = (
-            f"{emo.ALERT} An exception was raised while handling an update\n\n"
+            f"{con.ALERT} An exception was raised while handling an update\n\n"
             f"<pre>update = {html.escape(json.dumps(update_str, indent=2, ensure_ascii=False))}"
             "</pre>\n\n"
             f"<pre>context.chat_data = {html.escape(str(context.chat_data))}</pre>\n\n"

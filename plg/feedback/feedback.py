@@ -1,4 +1,4 @@
-import emoji as emo
+import constants as con
 
 from telegram import Update
 from telegram.ext import CallbackContext, CommandHandler
@@ -30,4 +30,4 @@ class Feedback(TGBFPlugin):
         sql = await self.get_resource("insert_feedback.sql")
         await self.exec_sql(sql, user.id, name, user.username, feedback)
 
-        await update.message.reply_text(f"Thanks for letting us know {emo.HEART}")
+        await update.message.reply_text(f"Thanks for letting us know {con.HEART}")

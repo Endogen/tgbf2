@@ -1,4 +1,4 @@
-import emoji as emo
+import constants as con
 
 from plugin import TGBFPlugin
 from telegram import Update
@@ -23,17 +23,17 @@ class Admin(TGBFPlugin):
         if sub_command == 'disable':
             if plg_name in list(self.plugins.keys()):
                 await self.tgb.disable_plugin(plg_name)
-                await update.message.reply_text(f"{emo.DONE} Plugin '{plg_name}' disabled")
+                await update.message.reply_text(f"{con.DONE} Plugin '{plg_name}' disabled")
             else:
-                await update.message.reply_text(f"{emo.WARNING} Plugin '{plg_name}' not available")
+                await update.message.reply_text(f"{con.WARNING} Plugin '{plg_name}' not available")
 
         elif sub_command == 'enable':
             worked, msg = await self.tgb.enable_plugin(plg_name)
 
             if worked:
-                await update.message.reply_text(f"{emo.DONE} Plugin '{plg_name}' enabled")
+                await update.message.reply_text(f"{con.DONE} Plugin '{plg_name}' enabled")
             else:
-                await update.message.reply_text(f"{emo.WARNING} Plugin '{plg_name}' not available")
+                await update.message.reply_text(f"{con.WARNING} Plugin '{plg_name}' not available")
 
         else:
-            await update.message.reply_text(f'{emo.WARNING} Unknown argument(s)')
+            await update.message.reply_text(f'{con.WARNING} Unknown argument(s)')

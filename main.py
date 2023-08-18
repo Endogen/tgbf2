@@ -3,8 +3,7 @@ import sys
 import asyncio
 import importlib
 import nest_asyncio
-import emoji as emo
-import constants as c
+import constants as con
 
 from pathlib import Path
 from loguru import logger
@@ -37,7 +36,7 @@ class TelegramBot:
 
         # Init webserver
         self.web = WebAppWrapper(
-            res_path=c.DIR_RES,
+            res_path=con.DIR_RES,
             port=self.cfg.get('webserver', 'port')
         )
 
@@ -48,7 +47,7 @@ class TelegramBot:
             # Notify admin about bot start
             await self.bot.updater.bot.send_message(
                 chat_id=self.cfg.get('admin_tg_id'),
-                text=f'{emo.ROBOT} Bot is up and running!'
+                text=f'{con.ROBOT} Bot is up and running!'
             )
         except InvalidToken:
             logger.error('Invalid Telegram bot token')
@@ -67,7 +66,7 @@ class TelegramBot:
         """ Load all plugins from the 'plg' folder """
 
         try:
-            for _, folders, _ in os.walk(c.DIR_PLG):
+            for _, folders, _ in os.walk(con.DIR_PLG):
                 for folder in folders:
                     if folder.startswith("_"):
                         continue
@@ -84,7 +83,7 @@ class TelegramBot:
         await self.disable_plugin(name)
 
         try:
-            module_path = f"{c.DIR_PLG}.{name}.{name}"
+            module_path = f"{con.DIR_PLG}.{name}.{name}"
             module = importlib.import_module(module_path)
 
             importlib.reload(module)
@@ -121,8 +120,8 @@ class TelegramBot:
             plugin.endpoints.clear()
 
             # Remove all plugin references
-            del sys.modules[f"{c.DIR_PLG}.{name}.{name}"]
-            del sys.modules[f"{c.DIR_PLG}.{name}"]
+            del sys.modules[f"{con.DIR_PLG}.{name}.{name}"]
+            del sys.modules[f"{con.DIR_PLG}.{name}"]
             del self.plugins[name]
             del plugin
 
@@ -159,6 +158,6 @@ if __name__ == "__main__":
     nest_asyncio.apply()
 
     asyncio.run(TelegramBot().run(
-        ConfigManager(c.DIR_CFG / c.FILE_CFG),
+        ConfigManager(con.DIR_CFG / con.FILE_CFG),
         os.getenv('TG_TOKEN'))
     )
