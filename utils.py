@@ -142,7 +142,7 @@ def md5(input_str: str, to_int: bool = False):
     return int(md5_hash, 16) if to_int else md5_hash
 
 
-def to_unix_time(date_time: datetime, millis: bool = False):
+def to_unix_time(date_time, millis: bool = False):
     from datetime import datetime
     seconds = (date_time - datetime(1970, 1, 1)).total_seconds()
     return int(seconds * 1000 if millis else seconds)
