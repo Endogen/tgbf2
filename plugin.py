@@ -321,8 +321,7 @@ class TGBFPlugin:
 
         try:
             # Create directory if it doesn't exist
-            directory = os.path.dirname(db_path)
-            os.makedirs(directory, exist_ok=True)
+            Path(db_path).parent.mkdir(parents=True, exist_ok=True)
         except Exception as e:
             res["data"] = str(e)
             res["success"] = False
