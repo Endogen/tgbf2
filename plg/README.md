@@ -2,3 +2,4 @@
 - Add example code to show how to handle SQLite
 - Step-by-Step guide to create a plugin
 - Logging in plugins with 'log.'
+- Naming conventions

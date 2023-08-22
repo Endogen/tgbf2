@@ -1,5 +1,32 @@
+# TGBF2 - Telegram Bot Framework V2
+
+TGBF2 is a framework to build Telegram bots based on the Python module [`python-telegram-bot`](https://github.com/python-telegram-bot/python-telegram-bot). That module is already easy to use but once you built more than one bot you will find yourself doing things over and over again and instead of copying things over all the time, it makes more sens to use a framework like this one that can handle certain things for you so that you can focus on implementing the main logic for bot commands.    
+
+The following concepts help TGBF2 to achieve this
+- Plugin system
+  - Everything you can do with the `python-telegram-bot` module you can do here too with a plugin (Python file) that will be loaded on startup. These Plugins can also be enabled / disabled while the bot is running. Read more about plugins [here](plg/README.md).
+- FastAPI integration
+  - Each plugin can set up endpoints that can be enabled / disabled on the fly
+- JSON config files
+  - A plugin can have one or more config files that 
+- SQLite integration
+  - ...
+- Logging into file with file rotation
+- Decorators to handle common tasks like
+  - Typing notification on command execution
+  - Commands only for private / public /owner use
+  - Blacklists and Whitelists for command executions
+- Global data that all plugins can access
+- Existing plugins for
+  - Error handling
+  - Backups (whole bot or single plugins)
+  - Bot restart
+  - Bot shutdown
+  - Admin command to enable / disable plugins
+  - Tracking of posted user messages 
+
 - Explain core concepts
-  - Naming conventions for plugins
+  - Plugins - link to README in plg folder
 - Remove DB plugin and instead create how-to where the details are mentioned
 - If plugin 'debug' is not being used then no need to install 'psutil' module
 - Default parse mode is HTML
@@ -51,3 +78,5 @@ TODO
 ## Run with PM2 (ecosystem file)
 - adjusting interpreter path
 - pm2 start `pm2.config.json`
+
+TODO: Check README content with AI and adjust texts
