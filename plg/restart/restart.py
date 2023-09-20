@@ -1,6 +1,3 @@
-import os
-import sys
-import asyncio
 import constants as con
 
 from telegram import Update
@@ -41,11 +38,10 @@ class Restart(TGBFPlugin):
         chat_id = msg.chat_id
         mess_id = msg.message_id
 
+        context.bot_data["restart"] = True
+
         self.cfg.set(chat_id, "chat_id")
         self.cfg.set(mess_id, "message_id")
 
-        m_name = __spec__.name
-        m_name = m_name[:m_name.index(".")]
-
-        await asyncio.sleep(1)
-        os.execl(sys.executable, sys.executable, '-m', m_name, *sys.argv[1:])
+        # FIXME: Doesn't work
+        self.tgb.bot.stop_running()

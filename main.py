@@ -62,6 +62,11 @@ class TelegramBot:
         logger.info("Setting up polling for updates...")
         self.bot.run_polling(drop_pending_updates=True)
 
+        # FIXME: Doesn't work
+        # Restart bot if bot stopped
+        if self.bot.bot_data["restart"]:
+            os.execl(sys.executable, sys.executable, *sys.argv)
+
     async def load_plugins(self):
         """ Load all plugins from the 'plg' folder """
 
