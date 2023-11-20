@@ -2,7 +2,7 @@ import os
 import sys
 import asyncio
 import importlib
-import nest_asyncio
+
 import constants as con
 
 from pathlib import Path
@@ -21,6 +21,7 @@ class TelegramBot:
         self.bot = None
         self.cfg = None
         self.web = None
+        self.srv = None
         self.plugins = dict()
 
     async def run(self, config: ConfigManager, token: str):
@@ -56,16 +57,19 @@ class TelegramBot:
         # Start webserver
         if self.cfg.get('webserver', 'enabled'):
             logger.info("Setting up webserver...")
-            self.web.start()
+            self.srv = self.web.run()
 
         # Start polling for updates
         logger.info("Setting up polling for updates...")
-        self.bot.run_polling(drop_pending_updates=True)
 
-        # FIXME: Doesn't work
-        # Restart bot if bot stopped
-        if self.bot.bot_data["restart"]:
-            os.execl(sys.executable, sys.executable, *sys.argv)
+        async with self.bot:
+            await self.bot.start()
+            await self.srv.serve()
+            await self.bot.stop()
+
+            # Restart bot if bot stopped
+            if self.bot.bot_data["restart"]:
+                os.execl(sys.executable, sys.executable, *sys.argv)
 
     async def load_plugins(self):
         """ Load all plugins from the 'plg' folder """
@@ -159,8 +163,6 @@ if __name__ == "__main__":
             level=log_level,
             rotation="5 MB"
         )
-
-    nest_asyncio.apply()
 
     asyncio.run(TelegramBot().run(
         ConfigManager(con.DIR_CFG / con.FILE_CFG),
