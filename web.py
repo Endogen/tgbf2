@@ -6,10 +6,6 @@ from fastapi import FastAPI, APIRouter
 from starlette.responses import FileResponse
 
 
-class StarletteHTTPException:
-    pass
-
-
 class WebAppWrapper(Thread):
 
     def __init__(self, res_path: Path, port: int = 5000):
