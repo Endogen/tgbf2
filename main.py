@@ -63,12 +63,17 @@ class TelegramBot:
         logger.info("Setting up polling for updates...")
 
         async with self.bot:
+            await self.bot.initialize()
             await self.bot.start()
+            await self.bot.updater.start_polling(drop_pending_updates=True)
             await self.srv.serve()
+            # TODO: Seems like waiting a bit works here!
+            await self.bot.updater.stop()
             await self.bot.stop()
+            await self.bot.updater.shutdown()
 
             # Restart bot if bot stopped
-            if self.bot.bot_data["restart"]:
+            if "restart" in self.bot.bot_data and self.bot.bot_data["restart"]:
                 os.execl(sys.executable, sys.executable, *sys.argv)
 
     async def load_plugins(self):
