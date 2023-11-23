@@ -66,8 +66,7 @@ class TelegramBot:
             await self.bot.initialize()
             await self.bot.start()
             await self.bot.updater.start_polling(drop_pending_updates=True)
-            await self.srv.serve()
-            # TODO: Seems like waiting a bit works here!
+            await self.srv.serve()  # TODO: What if webserver is disabled?
             await self.bot.updater.stop()
             await self.bot.stop()
             await self.bot.updater.shutdown()
