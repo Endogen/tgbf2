@@ -72,7 +72,7 @@ class TelegramBot:
             await self.bot.updater.shutdown()
 
             # Restart bot if bot stopped
-            if "restart" in self.bot.bot_data and self.bot.bot_data["restart"]:
+            if self.bot.bot_data and "restart" in self.bot.bot_data:
                 os.execl(sys.executable, sys.executable, *sys.argv)
 
     async def load_plugins(self):
