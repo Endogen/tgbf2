@@ -20,6 +20,10 @@ class Shutdown(TGBFPlugin):
         await update.message.reply_text(msg)
         self.log.info(msg)
 
+        # TODO: Choose to gracefully exit or not?
+        # TODO: Maybe use that?
+        # os.kill(os.getpid(), signal.SIGTERM)
+
         threading.Thread(target=asyncio.run, args=(self.shutdown_callback(),)).start()
 
     async def shutdown_callback(self):
