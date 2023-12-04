@@ -21,7 +21,6 @@ class TelegramBot:
         self.bot = None
         self.cfg = None
         self.web = None
-        self.srv = None
         self.plugins = dict()
 
     async def run(self, config: ConfigManager, token: str):
@@ -38,7 +37,7 @@ class TelegramBot:
         # Init webserver
         self.web = WebAppWrapper(
             res_path=con.DIR_RES,
-            port=self.cfg.get('webserver', 'port')
+            port=self.cfg.get('webserver_port')
         )
 
         # Load all plugins
@@ -54,26 +53,19 @@ class TelegramBot:
             logger.error('Invalid Telegram bot token')
             return
 
-        # Start webserver
-        if self.cfg.get('webserver', 'enabled'):
-            logger.info("Setting up webserver...")
-            self.srv = self.web.run()
-
-        # Start polling for updates
-        logger.info("Setting up polling for updates...")
-
         async with self.bot:
+            logger.info("Initialize bot...")
             await self.bot.initialize()
+            logger.info("Starting bot...")
             await self.bot.start()
+            logger.info("Polling for updates...")
             await self.bot.updater.start_polling(drop_pending_updates=True)
-            await self.srv.serve()  # TODO: What if webserver is disabled?
+            logger.info("Starting webserver...")
+            await self.web.run().serve()
+
+            # Shutdown bot
             await self.bot.updater.stop()
             await self.bot.stop()
-            await self.bot.updater.shutdown()
-
-            # Restart bot if bot stopped
-            if "restart" in self.bot.bot_data and self.bot.bot_data["restart"]:
-                os.execl(sys.executable, sys.executable, *sys.argv)
 
     async def load_plugins(self):
         """ Load all plugins from the 'plg' folder """
