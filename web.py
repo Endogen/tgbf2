@@ -12,6 +12,7 @@ class WebAppWrapper:
         self.res_path = res_path
         self.port = port
         self.app = None
+        self.srv = None
 
     def run(self) -> uvicorn.Server:
         self.app = FastAPI(title='TGBF2')
@@ -23,9 +24,11 @@ class WebAppWrapper:
         @self.app.get('/', include_in_schema=False)
         async def root(): return FileResponse(self.res_path / 'root.html')
 
-        return uvicorn.Server(
+        self.srv = uvicorn.Server(
             uvicorn.Config(self.app, host='0.0.0.0', port=self.port)
         )
+
+        return self.srv
 
     def add_endpoint(self, path, endpoint):
         if self.app:
