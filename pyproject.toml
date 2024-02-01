@@ -6,7 +6,7 @@ authors = ["endogen <endogen@protonmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-python-telegram-bot = {extras = ["job-queue"], version = "^20.3"}
+python-telegram-bot = {extras = ["job-queue"], version = "^20.7"}
 python-dotenv = "^1.0.0"
 loguru = "^0.7.0"
 psutil = "^5.9.5"
