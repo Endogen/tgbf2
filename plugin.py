@@ -278,7 +278,7 @@ class TGBFPlugin:
             db_name = c.FILE_DAT
 
         db_path = Path.cwd() / c.DIR_DAT / db_name
-        return self._exec_on_db(db_path, sql, *args)
+        return await self._exec_on_db(db_path, sql, *args)
 
     async def exec_sql(self, sql, *args, plugin="", db_name=""):
         """ Execute raw SQL statement on database for given
