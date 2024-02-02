@@ -434,7 +434,7 @@ class TGBFPlugin:
         """ Check if message was sent in a private chat or not """
         return message.chat.type == Chat.PRIVATE
 
-    def remove_msg_after(self, *messages: Message, after_secs):
+    async def remove_msg_after(self, *messages: Message, after_secs):
         """ Remove a Telegram message after a given time """
 
         async def remove_msg_job(context: CallbackContext):
